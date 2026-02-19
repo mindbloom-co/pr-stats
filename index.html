@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mindbloom PR Metrics — 2025-12-25 to 2026-02-19</title>
+<title>Mindbloom PR Metrics — 2025-11-19 to 2026-02-19</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,15 +29,15 @@
 <body>
 
 <h1>📊 Mindbloom PR Metrics</h1>
-<p class="subtitle">2025-12-25 → 2026-02-19 · 4 cycles · 6 contributors</p>
+<p class="subtitle">2025-11-19 → 2026-02-19 · 7 cycles · 6 contributors</p>
 
 <div class="cards">
-  <div class="card"><div class="value">339</div><div class="label">PRs Opened</div></div>
-  <div class="card"><div class="value">300</div><div class="label">PRs Merged</div></div>
+  <div class="card"><div class="value">510</div><div class="label">PRs Opened</div></div>
+  <div class="card"><div class="value">465</div><div class="label">PRs Merged</div></div>
   <div class="card"><div class="value">6</div><div class="label">Contributors</div></div>
-  <div class="card"><div class="value">1.6d</div><div class="label">Avg Time to Merge</div></div>
-  <div class="card"><div class="value">15.8h</div><div class="label">Median Time to Merge</div></div>
-  <div class="card"><div class="value">12.5</div><div class="label">Avg PRs/Person/Cycle</div></div>
+  <div class="card"><div class="value">1.5d</div><div class="label">Avg Time to Merge</div></div>
+  <div class="card"><div class="value">14.0h</div><div class="label">Median Time to Merge</div></div>
+  <div class="card"><div class="value">11.1</div><div class="label">Avg PRs/Person/Cycle</div></div>
 </div>
 
 <div class="chart-grid">
@@ -83,43 +83,43 @@
     <tbody>
       <tr>
         <td>MaGomesP</td>
-        <td class="num">104</td>
-        <td class="num">94</td>
-        <td class="num">48</td>
-        <td class="num">1.5d</td>
-        <td class="num">23.5</td>
+        <td class="num">173</td>
+        <td class="num">162</td>
+        <td class="num">84</td>
+        <td class="num">1.4d</td>
+        <td class="num">23.1</td>
       </tr>
       <tr>
         <td>linuxlewis</td>
-        <td class="num">98</td>
-        <td class="num">79</td>
-        <td class="num">110</td>
-        <td class="num">1.4d</td>
-        <td class="num">19.8</td>
-      </tr>
-      <tr>
-        <td>rafamfonseca</td>
-        <td class="num">52</td>
-        <td class="num">45</td>
-        <td class="num">90</td>
-        <td class="num">1.4d</td>
-        <td class="num">11.2</td>
+        <td class="num">138</td>
+        <td class="num">119</td>
+        <td class="num">194</td>
+        <td class="num">1.3d</td>
+        <td class="num">17.0</td>
       </tr>
       <tr>
         <td>samiruppaluru</td>
-        <td class="num">44</td>
-        <td class="num">44</td>
-        <td class="num">46</td>
-        <td class="num">2.0d</td>
-        <td class="num">11.0</td>
+        <td class="num">79</td>
+        <td class="num">79</td>
+        <td class="num">89</td>
+        <td class="num">1.8d</td>
+        <td class="num">11.3</td>
       </tr>
       <tr>
         <td>lucascamposj</td>
-        <td class="num">38</td>
-        <td class="num">37</td>
-        <td class="num">81</td>
+        <td class="num">61</td>
+        <td class="num">56</td>
+        <td class="num">118</td>
         <td class="num">1.6d</td>
-        <td class="num">9.2</td>
+        <td class="num">8.0</td>
+      </tr>
+      <tr>
+        <td>rafamfonseca</td>
+        <td class="num">56</td>
+        <td class="num">48</td>
+        <td class="num">160</td>
+        <td class="num">1.4d</td>
+        <td class="num">6.9</td>
       </tr>
       <tr>
         <td>Jamesl28</td>
@@ -127,14 +127,14 @@
         <td class="num">1</td>
         <td class="num">9</td>
         <td class="num">4.5d</td>
-        <td class="num">0.2</td>
+        <td class="num">0.1</td>
       </tr>
     </tbody>
   </table>
 </div>
 
 <script>
-const labels = ["2025-12-25\u21922026-01-07", "2026-01-08\u21922026-01-21", "2026-01-22\u21922026-02-04", "2026-02-05\u21922026-02-18"];
+const labels = ["2025-11-19\u21922025-12-02", "2025-12-03\u21922025-12-16", "2025-12-17\u21922025-12-30", "2025-12-31\u21922026-01-13", "2026-01-14\u21922026-01-27", "2026-01-28\u21922026-02-10", "2026-02-11\u21922026-02-19"];
 const chartDefaults = {
   responsive: true,
   plugins: {
@@ -152,8 +152,8 @@ new Chart(document.getElementById('trendChart'), {
   data: {
     labels,
     datasets: [
-      { label: 'Opened', data: [61, 90, 104, 84], borderColor: '#f28e2b', backgroundColor: 'rgba(242,142,43,0.1)', fill: true, tension: 0.3 },
-      { label: 'Merged', data: [48, 80, 96, 76], borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.1)', fill: true, tension: 0.3 },
+      { label: 'Opened', data: [65, 72, 40, 74, 103, 102, 54], borderColor: '#f28e2b', backgroundColor: 'rgba(242,142,43,0.1)', fill: true, tension: 0.3 },
+      { label: 'Merged', data: [57, 70, 43, 60, 94, 89, 52], borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.1)', fill: true, tension: 0.3 },
     ],
   },
   options: chartDefaults,
@@ -165,8 +165,8 @@ new Chart(document.getElementById('ttmTrendChart'), {
   data: {
     labels,
     datasets: [
-      { label: 'Avg (hours)', data: [28.9, 41.1, 37.1, 39.3], borderColor: '#e15759', tension: 0.3 },
-      { label: 'Median (hours)', data: [3.4, 13.5, 17.8, 20.3], borderColor: '#76b7b2', tension: 0.3 },
+      { label: 'Avg (hours)', data: [25.5, 36.7, 36.1, 34.7, 44.7, 32.4, 34.1], borderColor: '#e15759', tension: 0.3 },
+      { label: 'Median (hours)', data: [2.1, 13.4, 22.3, 18.5, 17.2, 10.3, 19.0], borderColor: '#76b7b2', tension: 0.3 },
     ],
   },
   options: chartDefaults,
@@ -175,28 +175,28 @@ new Chart(document.getElementById('ttmTrendChart'), {
 // Stacked bar: merged by author
 new Chart(document.getElementById('mergedChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 1], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [15, 23, 24, 32], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [17, 24, 21, 17], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [10, 13, 10, 4], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [6, 8, 19, 12], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [0, 12, 22, 10], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 0, 0, 1, 0], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [31, 22, 17, 18, 24, 28, 22], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [19, 16, 6, 19, 30, 17, 12], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [1, 11, 10, 13, 9, 9, 3], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [1, 1, 2, 6, 11, 23, 4], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [5, 20, 8, 4, 20, 11, 11], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
   options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
 });
 
 // Stacked bar: opened by author
 new Chart(document.getElementById('openedChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 3], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [21, 26, 24, 33], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [22, 29, 27, 20], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [11, 11, 11, 5], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [6, 11, 22, 13], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [1, 13, 20, 10], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 0, 0, 1, 2], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [34, 24, 13, 24, 25, 34, 19], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [19, 17, 5, 24, 35, 23, 15], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [3, 11, 11, 13, 12, 8, 3], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [3, 0, 3, 7, 14, 23, 6], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [6, 20, 8, 6, 17, 13, 9], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
   options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
 });
 
 // Stacked bar: reviews by author
 new Chart(document.getElementById('reviewsChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 3, 6], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [11, 13, 14, 10], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [20, 21, 29, 40], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [12, 23, 23, 23], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [10, 30, 31, 19], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [1, 15, 14, 16], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 0, 0, 4, 5], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [10, 15, 14, 13, 11, 14, 7], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [31, 30, 30, 16, 28, 29, 30], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [7, 17, 15, 17, 23, 28, 11], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [27, 27, 19, 16, 34, 24, 13], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [17, 19, 6, 8, 13, 12, 14], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
   options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
 });
 
 // TTM by author (grouped bar)
 new Chart(document.getElementById('ttmAuthorChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [null, null, null, 108.1], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [13.0, 39.6, 47.4, 35.9], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [16.6, 30.0, 42.9, 45.2], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [71.8, 28.8, 23.8, 19.4], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [31.7, 10.7, 38.0, 40.6], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [null, 99.6, 25.6, 39.8], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [null, null, null, null, null, 108.1, null], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [22.0, 43.6, 28.7, 15.8, 58.5, 27.4, 41.3], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [18.5, 23.1, 51.8, 22.7, 42.3, 33.4, 33.1], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [5.1, 59.2, 36.6, 57.6, 10.7, 25.3, 24.3], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [19.3, 143.0, 12.0, 31.7, 35.6, 37.3, 10.8], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [79.2, 22.3, 45.2, 107.1, 52.0, 32.7, 32.2], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
   options: chartDefaults,
 });
 </script>
