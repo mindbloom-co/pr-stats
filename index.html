@@ -33,7 +33,8 @@
 
 <div class="cards">
   <div class="card"><div class="value">510</div><div class="label">PRs Opened</div></div>
-  <div class="card"><div class="value">465</div><div class="label">PRs Merged</div></div>
+  <div class="card"><div class="value">465</div><div class="label">PRs Merged (Human)</div></div>
+  <div class="card"><div class="value">178</div><div class="label">AI PRs Merged</div></div>
   <div class="card"><div class="value">6</div><div class="label">Contributors</div></div>
   <div class="card"><div class="value">1.5d</div><div class="label">Avg Time to Merge</div></div>
   <div class="card"><div class="value">14.0h</div><div class="label">Median Time to Merge</div></div>
@@ -58,6 +59,10 @@
     <canvas id="openedChart"></canvas>
   </div>
   <div class="chart-box">
+    <h2>AI PRs Shepherded by Approver (per cycle)</h2>
+    <canvas id="shepherdChart"></canvas>
+  </div>
+  <div class="chart-box">
     <h2>Reviews Given by Author (per cycle)</h2>
     <canvas id="reviewsChart"></canvas>
   </div>
@@ -75,6 +80,7 @@
         <th>Author</th>
         <th class="num">Opened</th>
         <th class="num">Merged</th>
+        <th class="num">AI Shepherded</th>
         <th class="num">Reviews</th>
         <th class="num">Avg Merge Time</th>
         <th class="num">Merged/Cycle</th>
@@ -85,6 +91,7 @@
         <td>MaGomesP</td>
         <td class="num">173</td>
         <td class="num">162</td>
+        <td class="num">10</td>
         <td class="num">84</td>
         <td class="num">1.4d</td>
         <td class="num">23.1</td>
@@ -93,6 +100,7 @@
         <td>linuxlewis</td>
         <td class="num">138</td>
         <td class="num">119</td>
+        <td class="num">81</td>
         <td class="num">194</td>
         <td class="num">1.3d</td>
         <td class="num">17.0</td>
@@ -101,7 +109,8 @@
         <td>samiruppaluru</td>
         <td class="num">79</td>
         <td class="num">79</td>
-        <td class="num">89</td>
+        <td class="num">21</td>
+        <td class="num">90</td>
         <td class="num">1.8d</td>
         <td class="num">11.3</td>
       </tr>
@@ -109,6 +118,7 @@
         <td>lucascamposj</td>
         <td class="num">61</td>
         <td class="num">56</td>
+        <td class="num">2</td>
         <td class="num">118</td>
         <td class="num">1.6d</td>
         <td class="num">8.0</td>
@@ -117,6 +127,7 @@
         <td>rafamfonseca</td>
         <td class="num">56</td>
         <td class="num">48</td>
+        <td class="num">54</td>
         <td class="num">160</td>
         <td class="num">1.4d</td>
         <td class="num">6.9</td>
@@ -124,6 +135,7 @@
       <tr>
         <td>Jamesl28</td>
         <td class="num">3</td>
+        <td class="num">1</td>
         <td class="num">1</td>
         <td class="num">9</td>
         <td class="num">4.5d</td>
@@ -153,7 +165,8 @@ new Chart(document.getElementById('trendChart'), {
     labels,
     datasets: [
       { label: 'Opened', data: [65, 72, 40, 74, 103, 102, 54], borderColor: '#f28e2b', backgroundColor: 'rgba(242,142,43,0.1)', fill: true, tension: 0.3 },
-      { label: 'Merged', data: [57, 70, 43, 60, 94, 89, 52], borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.1)', fill: true, tension: 0.3 },
+      { label: 'Merged (Human)', data: [57, 70, 43, 60, 94, 89, 52], borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.1)', fill: true, tension: 0.3 },
+      { label: 'AI PRs', data: [21, 34, 32, 15, 20, 30, 26], borderColor: '#b07aa1', backgroundColor: 'rgba(176,122,161,0.1)', fill: true, tension: 0.3, borderDash: [5, 5] },
     ],
   },
   options: chartDefaults,
@@ -186,10 +199,17 @@ new Chart(document.getElementById('openedChart'), {
   options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
 });
 
+// Stacked bar: AI PRs shepherded
+new Chart(document.getElementById('shepherdChart'), {
+  type: 'bar',
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 0, 0, 0, 1], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [2, 2, 2, 1, 0, 2, 1], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [9, 15, 21, 8, 4, 7, 17], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [0, 1, 0, 0, 0, 1, 0], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [8, 8, 6, 4, 10, 14, 4], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [2, 5, 2, 2, 4, 4, 2], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
+  options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
+});
+
 // Stacked bar: reviews by author
 new Chart(document.getElementById('reviewsChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 0, 0, 4, 5], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [10, 15, 14, 13, 11, 14, 7], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [31, 30, 30, 16, 28, 29, 30], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [7, 17, 15, 17, 23, 28, 11], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [27, 27, 19, 16, 34, 24, 13], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [17, 19, 6, 8, 13, 12, 14], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 0, 0, 4, 5], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [10, 15, 14, 13, 11, 14, 7], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [31, 30, 30, 16, 28, 29, 30], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [7, 17, 15, 17, 23, 28, 11], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [27, 27, 19, 16, 34, 24, 13], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [17, 19, 6, 8, 13, 12, 15], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
   options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
 });
 

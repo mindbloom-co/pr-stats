@@ -47,6 +47,9 @@ BOTS = {
     "coderabbitai",
 }
 
+# AI coding agents — their PRs get attributed to the human who approved them
+AI_AGENTS = {"devin-ai-integration"}
+
 
 # ── GitHub API ──────────────────────────────────────────────
 
@@ -120,10 +123,17 @@ def fetch_merged_prs(repo: str, start: str, end: str) -> list[dict]:
         # Reviewers
         review_states = {"APPROVED", "CHANGES_REQUESTED", "COMMENTED"}
         reviewers = set()
+        approvers = []
         for review in (node.get("reviews") or {}).get("nodes", []):
             reviewer = (review.get("author") or {}).get("login")
             if reviewer and review.get("state") in review_states:
                 reviewers.add(reviewer)
+            if reviewer and review.get("state") == "APPROVED" and is_human(reviewer):
+                approvers.append(reviewer)
+
+        # For AI agent PRs, attribute to the first human approver
+        is_ai_pr = author in AI_AGENTS
+        shepherd = approvers[0] if (is_ai_pr and approvers) else None
 
         # Time to merge
         created_at = node.get("createdAt")
@@ -137,6 +147,8 @@ def fetch_merged_prs(repo: str, start: str, end: str) -> list[dict]:
         prs.append({
             "author": author,
             "reviewers": list(reviewers),
+            "shepherd": shepherd,
+            "is_ai_pr": is_ai_pr,
             "created_at": created_at,
             "merged_at": merged_at,
             "ttm_hours": ttm_hours,
@@ -261,8 +273,9 @@ def main():
         all_cycle_merged.append(cycle_merged)
         all_cycle_opened.append(cycle_opened)
 
-        # Filter to humans
+        # Filter
         human_merged = [pr for pr in cycle_merged if is_human(pr["author"])]
+        ai_merged = [pr for pr in cycle_merged if pr.get("is_ai_pr")]
         human_opened = [pr for pr in cycle_opened if is_human(pr["author"])]
         human_reviewers = [
             r for pr in cycle_merged for r in pr["reviewers"] if is_human(r)
@@ -272,21 +285,32 @@ def main():
         opened_count = len(human_opened)
         merged_count = len(human_merged)
         print()
-        print(f"  Opened: {opened_count}  |  Merged: {merged_count}")
+        print(f"  Opened: {opened_count}  |  Merged: {merged_count}  |  AI PRs: {len(ai_merged)}")
 
-        if not human_merged:
+        if not human_merged and not ai_merged:
             print("  No merged PRs this cycle.")
             continue
 
-        # PRs Authored (merged)
-        print()
-        print("  PRs Authored (merged):")
-        for author, count in count_sorted([pr["author"] for pr in human_merged]):
-            # Per-person TTM
-            author_prs = [pr for pr in human_merged if pr["author"] == author]
-            ttm = avg_ttm(author_prs)
-            ttm_str = f"  avg merge: {fmt_duration(ttm)}" if ttm is not None else ""
-            print(f"    {author:<25} {count:>3} PRs{ttm_str}")
+        # PRs Authored (merged, human only)
+        if human_merged:
+            print()
+            print("  PRs Authored (merged):")
+            for author, count in count_sorted([pr["author"] for pr in human_merged]):
+                author_prs = [pr for pr in human_merged if pr["author"] == author]
+                ttm = avg_ttm(author_prs)
+                ttm_str = f"  avg merge: {fmt_duration(ttm)}" if ttm is not None else ""
+                print(f"    {author:<25} {count:>3} PRs{ttm_str}")
+
+        # AI PRs shepherded (attributed to approver)
+        if ai_merged:
+            print()
+            print("  AI PRs Shepherded (by approver):")
+            shepherds = [pr["shepherd"] for pr in ai_merged if pr.get("shepherd")]
+            unattributed = sum(1 for pr in ai_merged if not pr.get("shepherd"))
+            for shepherd, count in count_sorted(shepherds):
+                print(f"    {shepherd:<25} {count:>3} PRs")
+            if unattributed:
+                print(f"    {'(no approver)' :<25} {unattributed:>3} PRs")
 
         # PRs Opened
         print()
@@ -305,7 +329,7 @@ def main():
         ttm_med = median_ttm(human_merged)
         unique_authors = len(set(pr["author"] for pr in human_merged))
         print()
-        print(f"  Cycle total: {merged_count} merged, {opened_count} opened, {unique_authors} contributors")
+        print(f"  Cycle total: {merged_count} merged, {opened_count} opened, {len(ai_merged)} AI, {unique_authors} contributors")
         if ttm_avg is not None:
             print(f"  Time to merge: {fmt_duration(ttm_avg)} avg / {fmt_duration(ttm_med)} median")
 
@@ -320,15 +344,16 @@ def main():
     print("═" * 60)
 
     human_merged = [pr for pr in all_merged if is_human(pr["author"])]
+    ai_merged = [pr for pr in all_merged if pr.get("is_ai_pr")]
     human_opened = [pr for pr in all_opened if is_human(pr["author"])]
     human_reviewers = [r for pr in all_merged for r in pr["reviewers"] if is_human(r)]
 
-    if not human_merged:
+    if not human_merged and not ai_merged:
         print("  No PRs found.")
         return
 
     print()
-    print(f"  Total opened: {len(human_opened)}  |  Total merged: {len(human_merged)}")
+    print(f"  Total opened: {len(human_opened)}  |  Total merged: {len(human_merged)}  |  AI PRs: {len(ai_merged)}")
 
     print()
     print("  PRs Authored — merged (total | avg/cycle | avg merge time):")
@@ -338,6 +363,16 @@ def main():
         ttm = avg_ttm(author_prs)
         ttm_str = fmt_duration(ttm) if ttm is not None else "n/a"
         print(f"    {author:<25} {count:>3} total   {avg:>5.1f}/cycle   merge: {ttm_str}")
+
+    print()
+    print("  AI PRs Shepherded — by approver (total | avg/cycle):")
+    shepherds_all = [pr["shepherd"] for pr in ai_merged if pr.get("shepherd")]
+    unattributed_all = sum(1 for pr in ai_merged if not pr.get("shepherd"))
+    for shepherd, count in count_sorted(shepherds_all):
+        avg = count / num_cycles
+        print(f"    {shepherd:<25} {count:>3} total   {avg:>5.1f}/cycle")
+    if unattributed_all:
+        print(f"    {'(no approver)':<25} {unattributed_all:>3} total")
 
     print()
     print("  PRs Opened (total | avg/cycle):")
@@ -413,17 +448,22 @@ def generate_html_report(
     reviews_by_author_cycle = {a: [] for a in all_authors}
     ttm_by_author_cycle = {a: [] for a in all_authors}
 
+    shepherd_by_author_cycle = {a: [] for a in all_authors}
+
     trend_opened = []
     trend_merged = []
+    trend_ai = []
     trend_ttm_avg = []
     trend_ttm_med = []
 
     for i in range(num_cycles):
         human_merged = [pr for pr in all_cycle_merged[i] if is_human(pr["author"])]
+        ai_merged = [pr for pr in all_cycle_merged[i] if pr.get("is_ai_pr")]
         human_opened = [pr for pr in all_cycle_opened[i] if is_human(pr["author"])]
 
         trend_opened.append(len(human_opened))
         trend_merged.append(len(human_merged))
+        trend_ai.append(len(ai_merged))
         t_avg = avg_ttm(human_merged)
         t_med = median_ttm(human_merged)
         trend_ttm_avg.append(round(t_avg, 1) if t_avg else 0)
@@ -432,12 +472,16 @@ def generate_html_report(
         merged_counts = defaultdict(int)
         opened_counts = defaultdict(int)
         review_counts = defaultdict(int)
+        shepherd_counts = defaultdict(int)
         ttm_sums = defaultdict(list)
 
         for pr in human_merged:
             merged_counts[pr["author"]] += 1
             if pr.get("ttm_hours") is not None:
                 ttm_sums[pr["author"]].append(pr["ttm_hours"])
+        for pr in ai_merged:
+            if pr.get("shepherd"):
+                shepherd_counts[pr["shepherd"]] += 1
         for pr in human_opened:
             opened_counts[pr["author"]] += 1
         for pr in all_cycle_merged[i]:
@@ -449,11 +493,13 @@ def generate_html_report(
             merged_by_author_cycle[a].append(merged_counts.get(a, 0))
             opened_by_author_cycle[a].append(opened_counts.get(a, 0))
             reviews_by_author_cycle[a].append(review_counts.get(a, 0))
+            shepherd_by_author_cycle[a].append(shepherd_counts.get(a, 0))
             ttms = ttm_sums.get(a, [])
             ttm_by_author_cycle[a].append(round(sum(ttms) / len(ttms), 1) if ttms else None)
 
     # Overall totals for summary cards
     all_human_merged = [pr for cycle in all_cycle_merged for pr in cycle if is_human(pr["author"])]
+    all_ai_merged = [pr for cycle in all_cycle_merged for pr in cycle if pr.get("is_ai_pr")]
     all_human_opened = [pr for cycle in all_cycle_opened for pr in cycle if is_human(pr["author"])]
     overall_ttm_avg = avg_ttm(all_human_merged)
     overall_ttm_med = median_ttm(all_human_merged)
@@ -514,7 +560,8 @@ def generate_html_report(
 
 <div class="cards">
   <div class="card"><div class="value">{len(all_human_opened)}</div><div class="label">PRs Opened</div></div>
-  <div class="card"><div class="value">{len(all_human_merged)}</div><div class="label">PRs Merged</div></div>
+  <div class="card"><div class="value">{len(all_human_merged)}</div><div class="label">PRs Merged (Human)</div></div>
+  <div class="card"><div class="value">{len(all_ai_merged)}</div><div class="label">AI PRs Merged</div></div>
   <div class="card"><div class="value">{len(all_authors)}</div><div class="label">Contributors</div></div>
   <div class="card"><div class="value">{fmt_duration(overall_ttm_avg) if overall_ttm_avg else 'n/a'}</div><div class="label">Avg Time to Merge</div></div>
   <div class="card"><div class="value">{fmt_duration(overall_ttm_med) if overall_ttm_med else 'n/a'}</div><div class="label">Median Time to Merge</div></div>
@@ -539,6 +586,10 @@ def generate_html_report(
     <canvas id="openedChart"></canvas>
   </div>
   <div class="chart-box">
+    <h2>AI PRs Shepherded by Approver (per cycle)</h2>
+    <canvas id="shepherdChart"></canvas>
+  </div>
+  <div class="chart-box">
     <h2>Reviews Given by Author (per cycle)</h2>
     <canvas id="reviewsChart"></canvas>
   </div>
@@ -556,6 +607,7 @@ def generate_html_report(
         <th>Author</th>
         <th class="num">Opened</th>
         <th class="num">Merged</th>
+        <th class="num">AI Shepherded</th>
         <th class="num">Reviews</th>
         <th class="num">Avg Merge Time</th>
         <th class="num">Merged/Cycle</th>
@@ -568,12 +620,16 @@ def generate_html_report(
     overall_merged_counts = defaultdict(int)
     overall_opened_counts = defaultdict(int)
     overall_review_counts = defaultdict(int)
+    overall_shepherd_counts = defaultdict(int)
     overall_ttm_by_author = defaultdict(list)
 
     for pr in all_human_merged:
         overall_merged_counts[pr["author"]] += 1
         if pr.get("ttm_hours") is not None:
             overall_ttm_by_author[pr["author"]].append(pr["ttm_hours"])
+    for pr in all_ai_merged:
+        if pr.get("shepherd"):
+            overall_shepherd_counts[pr["shepherd"]] += 1
     for pr in all_human_opened:
         overall_opened_counts[pr["author"]] += 1
     for cycle in all_cycle_merged:
@@ -585,6 +641,7 @@ def generate_html_report(
     for author in sorted(all_authors, key=lambda a: -overall_merged_counts.get(a, 0)):
         mc = overall_merged_counts.get(author, 0)
         oc = overall_opened_counts.get(author, 0)
+        sc = overall_shepherd_counts.get(author, 0)
         rc = overall_review_counts.get(author, 0)
         ttms = overall_ttm_by_author.get(author, [])
         ttm_str = fmt_duration(sum(ttms) / len(ttms)) if ttms else "n/a"
@@ -593,6 +650,7 @@ def generate_html_report(
         <td>{author}</td>
         <td class="num">{oc}</td>
         <td class="num">{mc}</td>
+        <td class="num">{sc}</td>
         <td class="num">{rc}</td>
         <td class="num">{ttm_str}</td>
         <td class="num">{avg_per_cycle:.1f}</td>
@@ -622,7 +680,8 @@ new Chart(document.getElementById('trendChart'), {{
     labels,
     datasets: [
       {{ label: 'Opened', data: {json.dumps(trend_opened)}, borderColor: '#f28e2b', backgroundColor: 'rgba(242,142,43,0.1)', fill: true, tension: 0.3 }},
-      {{ label: 'Merged', data: {json.dumps(trend_merged)}, borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.1)', fill: true, tension: 0.3 }},
+      {{ label: 'Merged (Human)', data: {json.dumps(trend_merged)}, borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.1)', fill: true, tension: 0.3 }},
+      {{ label: 'AI PRs', data: {json.dumps(trend_ai)}, borderColor: '#b07aa1', backgroundColor: 'rgba(176,122,161,0.1)', fill: true, tension: 0.3, borderDash: [5, 5] }},
     ],
   }},
   options: chartDefaults,
@@ -652,6 +711,13 @@ new Chart(document.getElementById('mergedChart'), {{
 new Chart(document.getElementById('openedChart'), {{
   type: 'bar',
   data: {{ labels, datasets: {js_datasets(opened_by_author_cycle)} }},
+  options: {{ ...chartDefaults, scales: {{ ...chartDefaults.scales, x: {{ ...chartDefaults.scales.x, stacked: true }}, y: {{ ...chartDefaults.scales.y, stacked: true }} }} }},
+}});
+
+// Stacked bar: AI PRs shepherded
+new Chart(document.getElementById('shepherdChart'), {{
+  type: 'bar',
+  data: {{ labels, datasets: {js_datasets(shepherd_by_author_cycle)} }},
   options: {{ ...chartDefaults, scales: {{ ...chartDefaults.scales, x: {{ ...chartDefaults.scales.x, stacked: true }}, y: {{ ...chartDefaults.scales.y, stacked: true }} }} }},
 }});
 
