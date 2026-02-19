@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mindbloom PR Metrics — 2025-12-25 to 2026-02-19</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1117; color: #e1e4e8; padding: 24px; }
+  h1 { font-size: 1.8rem; margin-bottom: 4px; color: #fff; }
+  .subtitle { color: #8b949e; margin-bottom: 24px; font-size: 0.95rem; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; text-align: center; }
+  .card .value { font-size: 2rem; font-weight: 700; color: #58a6ff; }
+  .card .label { font-size: 0.8rem; color: #8b949e; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 24px; margin-bottom: 32px; }
+  .chart-box { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; }
+  .chart-box h2 { font-size: 1.1rem; margin-bottom: 16px; color: #c9d1d9; }
+  canvas { max-height: 350px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #21262d; font-size: 0.9rem; }
+  th { color: #8b949e; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+  td { color: #c9d1d9; }
+  tr:hover td { background: #1c2129; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+
+<h1>📊 Mindbloom PR Metrics</h1>
+<p class="subtitle">2025-12-25 → 2026-02-19 · 4 cycles · 6 contributors</p>
+
+<div class="cards">
+  <div class="card"><div class="value">339</div><div class="label">PRs Opened</div></div>
+  <div class="card"><div class="value">300</div><div class="label">PRs Merged</div></div>
+  <div class="card"><div class="value">6</div><div class="label">Contributors</div></div>
+  <div class="card"><div class="value">1.6d</div><div class="label">Avg Time to Merge</div></div>
+  <div class="card"><div class="value">15.8h</div><div class="label">Median Time to Merge</div></div>
+  <div class="card"><div class="value">12.5</div><div class="label">Avg PRs/Person/Cycle</div></div>
+</div>
+
+<div class="chart-grid">
+  <div class="chart-box">
+    <h2>Opened vs Merged (per cycle)</h2>
+    <canvas id="trendChart"></canvas>
+  </div>
+  <div class="chart-box">
+    <h2>Time to Merge (per cycle)</h2>
+    <canvas id="ttmTrendChart"></canvas>
+  </div>
+  <div class="chart-box">
+    <h2>PRs Merged by Author (per cycle)</h2>
+    <canvas id="mergedChart"></canvas>
+  </div>
+  <div class="chart-box">
+    <h2>PRs Opened by Author (per cycle)</h2>
+    <canvas id="openedChart"></canvas>
+  </div>
+  <div class="chart-box">
+    <h2>Reviews Given by Author (per cycle)</h2>
+    <canvas id="reviewsChart"></canvas>
+  </div>
+  <div class="chart-box">
+    <h2>Avg Time to Merge by Author (hours)</h2>
+    <canvas id="ttmAuthorChart"></canvas>
+  </div>
+</div>
+
+<div class="chart-box" style="margin-bottom: 32px;">
+  <h2>Overall Summary</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Author</th>
+        <th class="num">Opened</th>
+        <th class="num">Merged</th>
+        <th class="num">Reviews</th>
+        <th class="num">Avg Merge Time</th>
+        <th class="num">Merged/Cycle</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>MaGomesP</td>
+        <td class="num">104</td>
+        <td class="num">94</td>
+        <td class="num">48</td>
+        <td class="num">1.5d</td>
+        <td class="num">23.5</td>
+      </tr>
+      <tr>
+        <td>linuxlewis</td>
+        <td class="num">98</td>
+        <td class="num">79</td>
+        <td class="num">110</td>
+        <td class="num">1.4d</td>
+        <td class="num">19.8</td>
+      </tr>
+      <tr>
+        <td>rafamfonseca</td>
+        <td class="num">52</td>
+        <td class="num">45</td>
+        <td class="num">90</td>
+        <td class="num">1.4d</td>
+        <td class="num">11.2</td>
+      </tr>
+      <tr>
+        <td>samiruppaluru</td>
+        <td class="num">44</td>
+        <td class="num">44</td>
+        <td class="num">46</td>
+        <td class="num">2.0d</td>
+        <td class="num">11.0</td>
+      </tr>
+      <tr>
+        <td>lucascamposj</td>
+        <td class="num">38</td>
+        <td class="num">37</td>
+        <td class="num">81</td>
+        <td class="num">1.6d</td>
+        <td class="num">9.2</td>
+      </tr>
+      <tr>
+        <td>Jamesl28</td>
+        <td class="num">3</td>
+        <td class="num">1</td>
+        <td class="num">9</td>
+        <td class="num">4.5d</td>
+        <td class="num">0.2</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+const labels = ["2025-12-25\u21922026-01-07", "2026-01-08\u21922026-01-21", "2026-01-22\u21922026-02-04", "2026-02-05\u21922026-02-18"];
+const chartDefaults = {
+  responsive: true,
+  plugins: {
+    legend: { labels: { color: '#8b949e', font: { size: 11 } } },
+  },
+  scales: {
+    x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
+    y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' }, beginAtZero: true },
+  },
+};
+
+// Opened vs Merged trend
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      { label: 'Opened', data: [61, 90, 104, 84], borderColor: '#f28e2b', backgroundColor: 'rgba(242,142,43,0.1)', fill: true, tension: 0.3 },
+      { label: 'Merged', data: [48, 80, 96, 76], borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.1)', fill: true, tension: 0.3 },
+    ],
+  },
+  options: chartDefaults,
+});
+
+// TTM trend
+new Chart(document.getElementById('ttmTrendChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      { label: 'Avg (hours)', data: [28.9, 41.1, 37.1, 39.3], borderColor: '#e15759', tension: 0.3 },
+      { label: 'Median (hours)', data: [3.4, 13.5, 17.8, 20.3], borderColor: '#76b7b2', tension: 0.3 },
+    ],
+  },
+  options: chartDefaults,
+});
+
+// Stacked bar: merged by author
+new Chart(document.getElementById('mergedChart'), {
+  type: 'bar',
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 1], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [15, 23, 24, 32], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [17, 24, 21, 17], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [10, 13, 10, 4], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [6, 8, 19, 12], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [0, 12, 22, 10], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
+  options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
+});
+
+// Stacked bar: opened by author
+new Chart(document.getElementById('openedChart'), {
+  type: 'bar',
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 3], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [21, 26, 24, 33], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [22, 29, 27, 20], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [11, 11, 11, 5], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [6, 11, 22, 13], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [1, 13, 20, 10], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
+  options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
+});
+
+// Stacked bar: reviews by author
+new Chart(document.getElementById('reviewsChart'), {
+  type: 'bar',
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 3, 6], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [11, 13, 14, 10], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [20, 21, 29, 40], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [12, 23, 23, 23], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [10, 30, 31, 19], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [1, 15, 14, 16], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
+  options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
+});
+
+// TTM by author (grouped bar)
+new Chart(document.getElementById('ttmAuthorChart'), {
+  type: 'bar',
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [null, null, null, 108.1], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [13.0, 39.6, 47.4, 35.9], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "linuxlewis", "data": [16.6, 30.0, 42.9, 45.2], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "lucascamposj", "data": [71.8, 28.8, 23.8, 19.4], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "rafamfonseca", "data": [31.7, 10.7, 38.0, 40.6], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "samiruppaluru", "data": [null, 99.6, 25.6, 39.8], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}] },
+  options: chartDefaults,
+});
+</script>
+</body>
+</html>
