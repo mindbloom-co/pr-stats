@@ -44,6 +44,7 @@ BOTS = {
     "github-actions",
     "dependabot",
     "claude",
+    "coderabbitai",
 }
 
 
