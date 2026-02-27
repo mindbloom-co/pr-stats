@@ -504,6 +504,42 @@ def generate_html_report(
     overall_ttm_avg = avg_ttm(all_human_merged)
     overall_ttm_med = median_ttm(all_human_merged)
 
+    # ── Quarterly PRs per engineer ──────────────────────────
+    def get_quarter(dt: datetime) -> str:
+        q = (dt.month - 1) // 3 + 1
+        return f"Q{q} {dt.year}"
+
+    quarterly_data: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    quarterly_authors: dict[str, set] = defaultdict(set)
+
+    for i, (cs, ce) in enumerate(cycles):
+        quarter = get_quarter(cs)
+        human_merged_q = [pr for pr in all_cycle_merged[i] if is_human(pr["author"])]
+        for pr in human_merged_q:
+            quarterly_data[quarter][pr["author"]] += 1
+            quarterly_authors[quarter].add(pr["author"])
+
+    # Also count AI PRs per quarter
+    quarterly_ai: dict[str, int] = defaultdict(int)
+    for i, (cs, ce) in enumerate(cycles):
+        quarter = get_quarter(cs)
+        ai_merged_q = [pr for pr in all_cycle_merged[i] if pr.get("is_ai_pr")]
+        quarterly_ai[quarter] += len(ai_merged_q)
+
+    # Build quarterly PRs/engineer data
+    quarter_labels = sorted(quarterly_data.keys(), key=lambda q: (int(q.split()[1]), int(q[1])))
+    quarterly_prs_per_eng = []
+    quarterly_total_merged = []
+    quarterly_total_ai = []
+    quarterly_engineer_count = []
+    for q in quarter_labels:
+        total = sum(quarterly_data[q].values())
+        eng_count = len(quarterly_authors[q])
+        quarterly_total_merged.append(total)
+        quarterly_total_ai.append(quarterly_ai.get(q, 0))
+        quarterly_engineer_count.append(eng_count)
+        quarterly_prs_per_eng.append(round(total / eng_count, 1) if eng_count else 0)
+
     # Colors for each author
     palette = [
         "#4e79a7", "#f28e2b", "#e15759", "#76b7b2",
@@ -596,6 +632,17 @@ def generate_html_report(
   <div class="chart-box">
     <h2>Avg Time to Merge by Author (hours)</h2>
     <canvas id="ttmAuthorChart"></canvas>
+  </div>
+</div>
+
+<div class="chart-grid">
+  <div class="chart-box">
+    <h2>PRs Merged per Engineer (Quarterly)</h2>
+    <canvas id="qtrPerEngChart"></canvas>
+  </div>
+  <div class="chart-box">
+    <h2>Quarterly Totals (Merged + AI)</h2>
+    <canvas id="qtrTotalsChart"></canvas>
   </div>
 </div>
 
@@ -733,6 +780,47 @@ new Chart(document.getElementById('ttmAuthorChart'), {{
   type: 'bar',
   data: {{ labels, datasets: {js_datasets(ttm_by_author_cycle)} }},
   options: chartDefaults,
+}});
+
+// Quarterly PRs per engineer
+const qtrLabels = {json.dumps(quarter_labels)};
+new Chart(document.getElementById('qtrPerEngChart'), {{
+  type: 'bar',
+  data: {{
+    labels: qtrLabels,
+    datasets: [
+      {{ label: 'PRs/Engineer', data: {json.dumps(quarterly_prs_per_eng)}, backgroundColor: '#58a6ff', borderColor: '#58a6ff', borderWidth: 2 }},
+    ],
+  }},
+  options: {{
+    ...chartDefaults,
+    plugins: {{
+      ...chartDefaults.plugins,
+      tooltip: {{
+        callbacks: {{
+          afterLabel: function(ctx) {{
+            const i = ctx.dataIndex;
+            const counts = {json.dumps(quarterly_engineer_count)};
+            const totals = {json.dumps(quarterly_total_merged)};
+            return `${{totals[i]}} total PRs / ${{counts[i]}} engineers`;
+          }}
+        }}
+      }}
+    }}
+  }},
+}});
+
+// Quarterly totals
+new Chart(document.getElementById('qtrTotalsChart'), {{
+  type: 'bar',
+  data: {{
+    labels: qtrLabels,
+    datasets: [
+      {{ label: 'Human PRs', data: {json.dumps(quarterly_total_merged)}, backgroundColor: '#4e79a7' }},
+      {{ label: 'AI PRs', data: {json.dumps(quarterly_total_ai)}, backgroundColor: '#b07aa1' }},
+    ],
+  }},
+  options: {{ ...chartDefaults, scales: {{ ...chartDefaults.scales, x: {{ ...chartDefaults.scales.x, stacked: true }}, y: {{ ...chartDefaults.scales.y, stacked: true }} }} }},
 }});
 </script>
 </body>
