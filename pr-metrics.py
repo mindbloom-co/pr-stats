@@ -532,6 +532,9 @@ def generate_html_report(
     quarterly_total_merged = []
     quarterly_total_ai = []
     quarterly_engineer_count = []
+    quarter_cycle_indices: dict[str, list[int]] = defaultdict(list)
+    for i, (cs, _ce) in enumerate(cycles):
+        quarter_cycle_indices[get_quarter(cs)].append(i)
     for q in quarter_labels:
         total = sum(quarterly_data[q].values())
         eng_count = len(quarterly_authors[q])
@@ -561,6 +564,120 @@ def generate_html_report(
             })
         return json.dumps(datasets)
 
+    def summarize_authors(
+        merged_prs: list[dict],
+        ai_prs: list[dict],
+        opened_prs: list[dict],
+        review_source_prs: list[dict],
+        cycle_count: int,
+    ) -> list[dict]:
+        """Build per-author summary rows for a reporting window."""
+        merged_counts = defaultdict(int)
+        opened_counts = defaultdict(int)
+        review_counts = defaultdict(int)
+        shepherd_counts = defaultdict(int)
+        ttm_by_author = defaultdict(list)
+
+        for pr in merged_prs:
+            merged_counts[pr["author"]] += 1
+            if pr.get("ttm_hours") is not None:
+                ttm_by_author[pr["author"]].append(pr["ttm_hours"])
+        for pr in ai_prs:
+            if pr.get("shepherd"):
+                shepherd_counts[pr["shepherd"]] += 1
+        for pr in opened_prs:
+            opened_counts[pr["author"]] += 1
+        for pr in review_source_prs:
+            for reviewer in pr["reviewers"]:
+                if is_human(reviewer):
+                    review_counts[reviewer] += 1
+
+        authors = sorted(
+            merged_counts.keys(),
+            key=lambda author: (-merged_counts.get(author, 0), author.lower()),
+        )
+
+        rows = []
+        for author in authors:
+            ttms = ttm_by_author.get(author, [])
+            rows.append({
+                "author": author,
+                "opened": opened_counts.get(author, 0),
+                "merged": merged_counts.get(author, 0),
+                "shepherded": shepherd_counts.get(author, 0),
+                "reviews": review_counts.get(author, 0),
+                "avg_merge_time": fmt_duration(sum(ttms) / len(ttms)) if ttms else "n/a",
+                "merged_per_cycle": merged_counts.get(author, 0) / cycle_count if cycle_count else 0,
+            })
+        return rows
+
+    def render_summary_table(title: str, rows: list[dict], subtitle: str | None = None) -> str:
+        """Render a summary table section."""
+        subtitle_html = f'\n  <p class="section-subtitle">{subtitle}</p>' if subtitle else ""
+        html_table = f"""<div class="chart-box summary-box">
+  <h2>{title}</h2>{subtitle_html}
+  <table>
+    <thead>
+      <tr>
+        <th>Author</th>
+        <th class="num">Opened</th>
+        <th class="num">Merged</th>
+        <th class="num">AI Shepherded</th>
+        <th class="num">Reviews</th>
+        <th class="num">Avg Merge Time</th>
+        <th class="num">Merged/Cycle</th>
+      </tr>
+    </thead>
+    <tbody>
+"""
+        for row in rows:
+            html_table += f"""      <tr>
+        <td>{row["author"]}</td>
+        <td class="num">{row["opened"]}</td>
+        <td class="num">{row["merged"]}</td>
+        <td class="num">{row["shepherded"]}</td>
+        <td class="num">{row["reviews"]}</td>
+        <td class="num">{row["avg_merge_time"]}</td>
+        <td class="num">{row["merged_per_cycle"]:.1f}</td>
+      </tr>\n"""
+        html_table += """    </tbody>
+  </table>
+</div>
+"""
+        return html_table
+
+    overall_summary_rows = summarize_authors(
+        all_human_merged,
+        all_ai_merged,
+        all_human_opened,
+        [pr for cycle in all_cycle_merged for pr in cycle],
+        num_cycles,
+    )
+
+    quarterly_summary_sections = []
+    for quarter in quarter_labels:
+        cycle_indices = quarter_cycle_indices[quarter]
+        quarter_all_merged = [pr for idx in cycle_indices for pr in all_cycle_merged[idx]]
+        quarter_human_merged = [pr for pr in quarter_all_merged if is_human(pr["author"])]
+        quarter_ai_merged = [pr for pr in quarter_all_merged if pr.get("is_ai_pr")]
+        quarter_human_opened = [
+            pr for idx in cycle_indices for pr in all_cycle_opened[idx] if is_human(pr["author"])
+        ]
+        summary_rows = summarize_authors(
+            quarter_human_merged,
+            quarter_ai_merged,
+            quarter_human_opened,
+            quarter_all_merged,
+            len(cycle_indices),
+        )
+        subtitle = (
+            f"{len(quarter_human_opened)} opened · "
+            f"{len(quarter_human_merged)} merged · "
+            f"{len(quarter_ai_merged)} AI PRs · "
+            f"{len(set(pr['author'] for pr in quarter_human_merged))} contributors"
+        )
+        quarterly_summary_sections.append(render_summary_table(quarter, summary_rows, subtitle))
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -587,6 +704,9 @@ def generate_html_report(
   td {{ color: #c9d1d9; }}
   tr:hover td {{ background: #1c2129; }}
   .num {{ text-align: right; font-variant-numeric: tabular-nums; }}
+  .summary-grid {{ display: grid; gap: 24px; margin-bottom: 32px; }}
+  .summary-box {{ margin-bottom: 0; }}
+  .section-subtitle {{ color: #8b949e; margin: -8px 0 16px; font-size: 0.9rem; }}
 </style>
 </head>
 <body>
@@ -646,65 +766,14 @@ def generate_html_report(
   </div>
 </div>
 
-<div class="chart-box" style="margin-bottom: 32px;">
-  <h2>Overall Summary</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Author</th>
-        <th class="num">Opened</th>
-        <th class="num">Merged</th>
-        <th class="num">AI Shepherded</th>
-        <th class="num">Reviews</th>
-        <th class="num">Avg Merge Time</th>
-        <th class="num">Merged/Cycle</th>
-      </tr>
-    </thead>
-    <tbody>
-"""
+{render_summary_table("Overall Summary", overall_summary_rows)}
 
-    # Build table rows
-    overall_merged_counts = defaultdict(int)
-    overall_opened_counts = defaultdict(int)
-    overall_review_counts = defaultdict(int)
-    overall_shepherd_counts = defaultdict(int)
-    overall_ttm_by_author = defaultdict(list)
-
-    for pr in all_human_merged:
-        overall_merged_counts[pr["author"]] += 1
-        if pr.get("ttm_hours") is not None:
-            overall_ttm_by_author[pr["author"]].append(pr["ttm_hours"])
-    for pr in all_ai_merged:
-        if pr.get("shepherd"):
-            overall_shepherd_counts[pr["shepherd"]] += 1
-    for pr in all_human_opened:
-        overall_opened_counts[pr["author"]] += 1
-    for cycle in all_cycle_merged:
-        for pr in cycle:
-            for r in pr["reviewers"]:
-                if is_human(r):
-                    overall_review_counts[r] += 1
-
-    for author in sorted(all_authors, key=lambda a: -overall_merged_counts.get(a, 0)):
-        mc = overall_merged_counts.get(author, 0)
-        oc = overall_opened_counts.get(author, 0)
-        sc = overall_shepherd_counts.get(author, 0)
-        rc = overall_review_counts.get(author, 0)
-        ttms = overall_ttm_by_author.get(author, [])
-        ttm_str = fmt_duration(sum(ttms) / len(ttms)) if ttms else "n/a"
-        avg_per_cycle = mc / num_cycles
-        html += f"""      <tr>
-        <td>{author}</td>
-        <td class="num">{oc}</td>
-        <td class="num">{mc}</td>
-        <td class="num">{sc}</td>
-        <td class="num">{rc}</td>
-        <td class="num">{ttm_str}</td>
-        <td class="num">{avg_per_cycle:.1f}</td>
-      </tr>\n"""
-
-    html += f"""    </tbody>
-  </table>
+<div class="summary-grid">
+  <div class="chart-box summary-box">
+    <h2>Quarterly Summary</h2>
+    <p class="section-subtitle">Per-author rollups for each quarter in this reporting window.</p>
+  </div>
+{''.join(quarterly_summary_sections)}
 </div>
 
 <script>

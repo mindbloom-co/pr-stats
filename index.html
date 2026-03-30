@@ -24,6 +24,9 @@
   td { color: #c9d1d9; }
   tr:hover td { background: #1c2129; }
   .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .summary-grid { display: grid; gap: 24px; margin-bottom: 32px; }
+  .summary-box { margin-bottom: 0; }
+  .section-subtitle { color: #8b949e; margin: -8px 0 16px; font-size: 0.9rem; }
 </style>
 </head>
 <body>
@@ -32,8 +35,8 @@
 <p class="subtitle">2025-03-30 → 2026-03-30 · 27 cycles · 13 contributors</p>
 
 <div class="cards">
-  <div class="card"><div class="value">2173</div><div class="label">PRs Opened</div></div>
-  <div class="card"><div class="value">2023</div><div class="label">PRs Merged (Human)</div></div>
+  <div class="card"><div class="value">2174</div><div class="label">PRs Opened</div></div>
+  <div class="card"><div class="value">2025</div><div class="label">PRs Merged (Human)</div></div>
   <div class="card"><div class="value">608</div><div class="label">AI PRs Merged</div></div>
   <div class="card"><div class="value">13</div><div class="label">Contributors</div></div>
   <div class="card"><div class="value">1.4d</div><div class="label">Avg Time to Merge</div></div>
@@ -83,7 +86,7 @@
   </div>
 </div>
 
-<div class="chart-box" style="margin-bottom: 32px;">
+<div class="chart-box summary-box">
   <h2>Overall Summary</h2>
   <table>
     <thead>
@@ -100,7 +103,7 @@
     <tbody>
       <tr>
         <td>MaGomesP</td>
-        <td class="num">680</td>
+        <td class="num">681</td>
         <td class="num">631</td>
         <td class="num">28</td>
         <td class="num">349</td>
@@ -112,7 +115,7 @@
         <td class="num">509</td>
         <td class="num">478</td>
         <td class="num">257</td>
-        <td class="num">846</td>
+        <td class="num">847</td>
         <td class="num">1.1d</td>
         <td class="num">17.7</td>
       </tr>
@@ -139,7 +142,7 @@
         <td class="num">178</td>
         <td class="num">163</td>
         <td class="num">158</td>
-        <td class="num">483</td>
+        <td class="num">484</td>
         <td class="num">1.4d</td>
         <td class="num">6.0</td>
       </tr>
@@ -164,11 +167,11 @@
       <tr>
         <td>Jamesl28</td>
         <td class="num">44</td>
-        <td class="num">38</td>
+        <td class="num">40</td>
         <td class="num">9</td>
-        <td class="num">54</td>
-        <td class="num">2.5d</td>
-        <td class="num">1.4</td>
+        <td class="num">55</td>
+        <td class="num">2.4d</td>
+        <td class="num">1.5</td>
       </tr>
       <tr>
         <td>aguiartiago</td>
@@ -219,6 +222,461 @@
   </table>
 </div>
 
+
+<div class="summary-grid">
+  <div class="chart-box summary-box">
+    <h2>Quarterly Summary</h2>
+    <p class="section-subtitle">Per-author rollups for each quarter in this reporting window.</p>
+  </div>
+<div class="chart-box summary-box">
+  <h2>Q1 2025</h2>
+  <p class="section-subtitle">100 opened · 100 merged · 12 AI PRs · 10 contributors</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Author</th>
+        <th class="num">Opened</th>
+        <th class="num">Merged</th>
+        <th class="num">AI Shepherded</th>
+        <th class="num">Reviews</th>
+        <th class="num">Avg Merge Time</th>
+        <th class="num">Merged/Cycle</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>MaGomesP</td>
+        <td class="num">32</td>
+        <td class="num">30</td>
+        <td class="num">0</td>
+        <td class="num">9</td>
+        <td class="num">16.6h</td>
+        <td class="num">30.0</td>
+      </tr>
+      <tr>
+        <td>linuxlewis</td>
+        <td class="num">25</td>
+        <td class="num">24</td>
+        <td class="num">7</td>
+        <td class="num">35</td>
+        <td class="num">13.5h</td>
+        <td class="num">24.0</td>
+      </tr>
+      <tr>
+        <td>aguiartiago</td>
+        <td class="num">9</td>
+        <td class="num">9</td>
+        <td class="num">0</td>
+        <td class="num">13</td>
+        <td class="num">15.3h</td>
+        <td class="num">9.0</td>
+      </tr>
+      <tr>
+        <td>lucascamposj</td>
+        <td class="num">8</td>
+        <td class="num">9</td>
+        <td class="num">0</td>
+        <td class="num">30</td>
+        <td class="num">22.3h</td>
+        <td class="num">9.0</td>
+      </tr>
+      <tr>
+        <td>fernandatw</td>
+        <td class="num">8</td>
+        <td class="num">6</td>
+        <td class="num">1</td>
+        <td class="num">9</td>
+        <td class="num">3.7d</td>
+        <td class="num">6.0</td>
+      </tr>
+      <tr>
+        <td>rafamfonseca</td>
+        <td class="num">5</td>
+        <td class="num">6</td>
+        <td class="num">0</td>
+        <td class="num">10</td>
+        <td class="num">1.4d</td>
+        <td class="num">6.0</td>
+      </tr>
+      <tr>
+        <td>samiruppaluru</td>
+        <td class="num">5</td>
+        <td class="num">6</td>
+        <td class="num">0</td>
+        <td class="num">8</td>
+        <td class="num">2.5d</td>
+        <td class="num">6.0</td>
+      </tr>
+      <tr>
+        <td>arthuravilamb</td>
+        <td class="num">3</td>
+        <td class="num">5</td>
+        <td class="num">0</td>
+        <td class="num">5</td>
+        <td class="num">2.3d</td>
+        <td class="num">5.0</td>
+      </tr>
+      <tr>
+        <td>guilhermehpsm</td>
+        <td class="num">5</td>
+        <td class="num">4</td>
+        <td class="num">4</td>
+        <td class="num">44</td>
+        <td class="num">4.3d</td>
+        <td class="num">4.0</td>
+      </tr>
+      <tr>
+        <td>scootklein</td>
+        <td class="num">0</td>
+        <td class="num">1</td>
+        <td class="num">0</td>
+        <td class="num">1</td>
+        <td class="num">2.8d</td>
+        <td class="num">1.0</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="chart-box summary-box">
+  <h2>Q2 2025</h2>
+  <p class="section-subtitle">557 opened · 519 merged · 107 AI PRs · 11 contributors</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Author</th>
+        <th class="num">Opened</th>
+        <th class="num">Merged</th>
+        <th class="num">AI Shepherded</th>
+        <th class="num">Reviews</th>
+        <th class="num">Avg Merge Time</th>
+        <th class="num">Merged/Cycle</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>MaGomesP</td>
+        <td class="num">140</td>
+        <td class="num">130</td>
+        <td class="num">1</td>
+        <td class="num">70</td>
+        <td class="num">1.5d</td>
+        <td class="num">21.7</td>
+      </tr>
+      <tr>
+        <td>linuxlewis</td>
+        <td class="num">113</td>
+        <td class="num">109</td>
+        <td class="num">49</td>
+        <td class="num">203</td>
+        <td class="num">21.5h</td>
+        <td class="num">18.2</td>
+      </tr>
+      <tr>
+        <td>guilhermehpsm</td>
+        <td class="num">68</td>
+        <td class="num">66</td>
+        <td class="num">37</td>
+        <td class="num">219</td>
+        <td class="num">16.2h</td>
+        <td class="num">11.0</td>
+      </tr>
+      <tr>
+        <td>lucascamposj</td>
+        <td class="num">57</td>
+        <td class="num">54</td>
+        <td class="num">1</td>
+        <td class="num">119</td>
+        <td class="num">19.8h</td>
+        <td class="num">9.0</td>
+      </tr>
+      <tr>
+        <td>getjoey</td>
+        <td class="num">64</td>
+        <td class="num">52</td>
+        <td class="num">1</td>
+        <td class="num">56</td>
+        <td class="num">1.5d</td>
+        <td class="num">8.7</td>
+      </tr>
+      <tr>
+        <td>rafamfonseca</td>
+        <td class="num">37</td>
+        <td class="num">33</td>
+        <td class="num">9</td>
+        <td class="num">55</td>
+        <td class="num">24.0h</td>
+        <td class="num">5.5</td>
+      </tr>
+      <tr>
+        <td>aguiartiago</td>
+        <td class="num">27</td>
+        <td class="num">26</td>
+        <td class="num">0</td>
+        <td class="num">29</td>
+        <td class="num">2.6d</td>
+        <td class="num">4.3</td>
+      </tr>
+      <tr>
+        <td>fernandatw</td>
+        <td class="num">25</td>
+        <td class="num">23</td>
+        <td class="num">3</td>
+        <td class="num">42</td>
+        <td class="num">3.6d</td>
+        <td class="num">3.8</td>
+      </tr>
+      <tr>
+        <td>samiruppaluru</td>
+        <td class="num">19</td>
+        <td class="num">20</td>
+        <td class="num">1</td>
+        <td class="num">26</td>
+        <td class="num">2.7d</td>
+        <td class="num">3.3</td>
+      </tr>
+      <tr>
+        <td>scootklein</td>
+        <td class="num">6</td>
+        <td class="num">5</td>
+        <td class="num">2</td>
+        <td class="num">17</td>
+        <td class="num">2.0d</td>
+        <td class="num">0.8</td>
+      </tr>
+      <tr>
+        <td>factory-droid</td>
+        <td class="num">1</td>
+        <td class="num">1</td>
+        <td class="num">0</td>
+        <td class="num">0</td>
+        <td class="num">3.0d</td>
+        <td class="num">0.2</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="chart-box summary-box">
+  <h2>Q3 2025</h2>
+  <p class="section-subtitle">537 opened · 497 merged · 125 AI PRs · 7 contributors</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Author</th>
+        <th class="num">Opened</th>
+        <th class="num">Merged</th>
+        <th class="num">AI Shepherded</th>
+        <th class="num">Reviews</th>
+        <th class="num">Avg Merge Time</th>
+        <th class="num">Merged/Cycle</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>MaGomesP</td>
+        <td class="num">190</td>
+        <td class="num">174</td>
+        <td class="num">3</td>
+        <td class="num">77</td>
+        <td class="num">1.3d</td>
+        <td class="num">24.9</td>
+      </tr>
+      <tr>
+        <td>linuxlewis</td>
+        <td class="num">88</td>
+        <td class="num">87</td>
+        <td class="num">39</td>
+        <td class="num">190</td>
+        <td class="num">1.1d</td>
+        <td class="num">12.4</td>
+      </tr>
+      <tr>
+        <td>lucascamposj</td>
+        <td class="num">69</td>
+        <td class="num">60</td>
+        <td class="num">0</td>
+        <td class="num">165</td>
+        <td class="num">1.1d</td>
+        <td class="num">8.6</td>
+      </tr>
+      <tr>
+        <td>getjoey</td>
+        <td class="num">55</td>
+        <td class="num">47</td>
+        <td class="num">3</td>
+        <td class="num">65</td>
+        <td class="num">2.2d</td>
+        <td class="num">6.7</td>
+      </tr>
+      <tr>
+        <td>samiruppaluru</td>
+        <td class="num">47</td>
+        <td class="num">47</td>
+        <td class="num">4</td>
+        <td class="num">38</td>
+        <td class="num">1.2d</td>
+        <td class="num">6.7</td>
+      </tr>
+      <tr>
+        <td>rafamfonseca</td>
+        <td class="num">46</td>
+        <td class="num">43</td>
+        <td class="num">34</td>
+        <td class="num">93</td>
+        <td class="num">18.7h</td>
+        <td class="num">6.1</td>
+      </tr>
+      <tr>
+        <td>guilhermehpsm</td>
+        <td class="num">41</td>
+        <td class="num">39</td>
+        <td class="num">39</td>
+        <td class="num">163</td>
+        <td class="num">2.1d</td>
+        <td class="num">5.6</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="chart-box summary-box">
+  <h2>Q4 2025</h2>
+  <p class="section-subtitle">385 opened · 367 merged · 175 AI PRs · 5 contributors</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Author</th>
+        <th class="num">Opened</th>
+        <th class="num">Merged</th>
+        <th class="num">AI Shepherded</th>
+        <th class="num">Reviews</th>
+        <th class="num">Avg Merge Time</th>
+        <th class="num">Merged/Cycle</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>MaGomesP</td>
+        <td class="num">134</td>
+        <td class="num">128</td>
+        <td class="num">12</td>
+        <td class="num">90</td>
+        <td class="num">1.3d</td>
+        <td class="num">21.3</td>
+      </tr>
+      <tr>
+        <td>linuxlewis</td>
+        <td class="num">120</td>
+        <td class="num">116</td>
+        <td class="num">86</td>
+        <td class="num">175</td>
+        <td class="num">18.1h</td>
+        <td class="num">19.3</td>
+      </tr>
+      <tr>
+        <td>lucascamposj</td>
+        <td class="num">60</td>
+        <td class="num">58</td>
+        <td class="num">3</td>
+        <td class="num">101</td>
+        <td class="num">2.0d</td>
+        <td class="num">9.7</td>
+      </tr>
+      <tr>
+        <td>samiruppaluru</td>
+        <td class="num">53</td>
+        <td class="num">51</td>
+        <td class="num">20</td>
+        <td class="num">71</td>
+        <td class="num">1.5d</td>
+        <td class="num">8.5</td>
+      </tr>
+      <tr>
+        <td>rafamfonseca</td>
+        <td class="num">18</td>
+        <td class="num">14</td>
+        <td class="num">47</td>
+        <td class="num">143</td>
+        <td class="num">1.2d</td>
+        <td class="num">2.3</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="chart-box summary-box">
+  <h2>Q1 2026</h2>
+  <p class="section-subtitle">595 opened · 542 merged · 189 AI PRs · 6 contributors</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Author</th>
+        <th class="num">Opened</th>
+        <th class="num">Merged</th>
+        <th class="num">AI Shepherded</th>
+        <th class="num">Reviews</th>
+        <th class="num">Avg Merge Time</th>
+        <th class="num">Merged/Cycle</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>MaGomesP</td>
+        <td class="num">185</td>
+        <td class="num">169</td>
+        <td class="num">12</td>
+        <td class="num">103</td>
+        <td class="num">1.5d</td>
+        <td class="num">24.1</td>
+      </tr>
+      <tr>
+        <td>linuxlewis</td>
+        <td class="num">163</td>
+        <td class="num">142</td>
+        <td class="num">76</td>
+        <td class="num">244</td>
+        <td class="num">1.6d</td>
+        <td class="num">20.3</td>
+      </tr>
+      <tr>
+        <td>rafamfonseca</td>
+        <td class="num">72</td>
+        <td class="num">67</td>
+        <td class="num">68</td>
+        <td class="num">183</td>
+        <td class="num">2.1d</td>
+        <td class="num">9.6</td>
+      </tr>
+      <tr>
+        <td>samiruppaluru</td>
+        <td class="num">66</td>
+        <td class="num">67</td>
+        <td class="num">16</td>
+        <td class="num">70</td>
+        <td class="num">1.7d</td>
+        <td class="num">9.6</td>
+      </tr>
+      <tr>
+        <td>lucascamposj</td>
+        <td class="num">63</td>
+        <td class="num">57</td>
+        <td class="num">1</td>
+        <td class="num">106</td>
+        <td class="num">1.5d</td>
+        <td class="num">8.1</td>
+      </tr>
+      <tr>
+        <td>Jamesl28</td>
+        <td class="num">44</td>
+        <td class="num">40</td>
+        <td class="num">9</td>
+        <td class="num">55</td>
+        <td class="num">2.4d</td>
+        <td class="num">5.7</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+
 <script>
 const labels = ["2025-03-30\u21922025-04-12", "2025-04-13\u21922025-04-26", "2025-04-27\u21922025-05-10", "2025-05-11\u21922025-05-24", "2025-05-25\u21922025-06-07", "2025-06-08\u21922025-06-21", "2025-06-22\u21922025-07-05", "2025-07-06\u21922025-07-19", "2025-07-20\u21922025-08-02", "2025-08-03\u21922025-08-16", "2025-08-17\u21922025-08-30", "2025-08-31\u21922025-09-13", "2025-09-14\u21922025-09-27", "2025-09-28\u21922025-10-11", "2025-10-12\u21922025-10-25", "2025-10-26\u21922025-11-08", "2025-11-09\u21922025-11-22", "2025-11-23\u21922025-12-06", "2025-12-07\u21922025-12-20", "2025-12-21\u21922026-01-03", "2026-01-04\u21922026-01-17", "2026-01-18\u21922026-01-31", "2026-02-01\u21922026-02-14", "2026-02-15\u21922026-02-28", "2026-03-01\u21922026-03-14", "2026-03-15\u21922026-03-28", "2026-03-29\u21922026-03-30"];
 const chartDefaults = {
@@ -238,8 +696,8 @@ new Chart(document.getElementById('trendChart'), {
   data: {
     labels,
     datasets: [
-      { label: 'Opened', data: [100, 93, 93, 95, 100, 93, 83, 94, 112, 78, 80, 72, 49, 52, 81, 64, 80, 57, 72, 31, 102, 102, 92, 116, 85, 95, 2], borderColor: '#f28e2b', backgroundColor: 'rgba(242,142,43,0.1)', fill: true, tension: 0.3 },
-      { label: 'Merged (Human)', data: [100, 86, 82, 89, 93, 91, 78, 85, 110, 65, 78, 63, 47, 49, 76, 60, 81, 53, 73, 24, 91, 96, 84, 108, 80, 81, 0], borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.1)', fill: true, tension: 0.3 },
+      { label: 'Opened', data: [100, 93, 93, 95, 100, 93, 83, 94, 112, 78, 80, 72, 49, 52, 81, 64, 80, 57, 72, 31, 102, 102, 92, 116, 85, 95, 3], borderColor: '#f28e2b', backgroundColor: 'rgba(242,142,43,0.1)', fill: true, tension: 0.3 },
+      { label: 'Merged (Human)', data: [100, 86, 82, 89, 93, 91, 78, 85, 110, 65, 78, 63, 47, 49, 76, 60, 81, 53, 73, 24, 91, 96, 84, 108, 80, 81, 2], borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.1)', fill: true, tension: 0.3 },
       { label: 'AI PRs', data: [12, 36, 16, 9, 10, 21, 15, 13, 15, 14, 16, 23, 17, 27, 36, 30, 25, 27, 33, 24, 19, 20, 45, 32, 33, 38, 2], borderColor: '#b07aa1', backgroundColor: 'rgba(176,122,161,0.1)', fill: true, tension: 0.3, borderDash: [5, 5] },
     ],
   },
@@ -252,8 +710,8 @@ new Chart(document.getElementById('ttmTrendChart'), {
   data: {
     labels,
     datasets: [
-      { label: 'Avg (hours)', data: [30.1, 24.6, 41.6, 24.3, 54.0, 25.5, 26.0, 27.5, 16.2, 22.9, 37.9, 27.9, 69.0, 48.4, 32.0, 28.1, 22.9, 28.7, 39.8, 28.7, 31.6, 45.5, 37.3, 49.5, 37.7, 37.1, 0], borderColor: '#e15759', tension: 0.3 },
-      { label: 'Median (hours)', data: [5.1, 1.3, 2.1, 2.4, 2.9, 2.9, 7.0, 4.7, 3.5, 3.8, 19.1, 10.3, 18.6, 14.1, 3.5, 19.6, 2.7, 3.8, 17.9, 2.4, 14.0, 20.6, 17.8, 17.0, 15.3, 12.6, 0], borderColor: '#76b7b2', tension: 0.3 },
+      { label: 'Avg (hours)', data: [30.1, 24.6, 41.6, 24.3, 54.0, 25.5, 26.0, 27.5, 16.2, 22.9, 37.9, 27.9, 69.0, 48.4, 32.0, 28.1, 22.9, 28.7, 39.8, 28.7, 31.6, 45.5, 37.3, 49.5, 37.7, 37.1, 8.6], borderColor: '#e15759', tension: 0.3 },
+      { label: 'Median (hours)', data: [5.1, 1.3, 2.1, 2.4, 2.9, 2.9, 7.0, 4.7, 3.5, 3.8, 19.1, 10.3, 18.6, 14.1, 3.5, 19.6, 2.7, 3.8, 17.9, 2.4, 14.0, 20.6, 17.8, 17.0, 15.3, 12.6, 8.6], borderColor: '#76b7b2', tension: 0.3 },
     ],
   },
   options: chartDefaults,
@@ -262,14 +720,14 @@ new Chart(document.getElementById('ttmTrendChart'), {
 // Stacked bar: merged by author
 new Chart(document.getElementById('mergedChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5, 9, 23, 0], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [30, 23, 17, 26, 20, 20, 24, 36, 37, 27, 19, 20, 17, 18, 17, 17, 33, 29, 21, 11, 28, 25, 28, 38, 31, 19, 0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "aguiartiago", "data": [9, 4, 6, 10, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "arthuravilamb", "data": [5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "factory-droid", "data": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "fernandatw", "data": [6, 10, 5, 3, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "getjoey", "data": [0, 0, 7, 7, 10, 18, 10, 13, 5, 4, 15, 6, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "guilhermehpsm", "data": [4, 6, 15, 14, 11, 12, 8, 3, 15, 7, 1, 2, 6, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}, {"label": "linuxlewis", "data": [24, 25, 12, 7, 28, 18, 19, 14, 20, 11, 15, 8, 9, 10, 33, 22, 28, 14, 14, 5, 29, 25, 18, 42, 13, 15, 0], "backgroundColor": "#9c755f", "borderColor": "#9c755f", "borderWidth": 2}, {"label": "lucascamposj", "data": [9, 11, 7, 7, 8, 10, 11, 9, 14, 7, 8, 9, 5, 8, 14, 11, 10, 4, 15, 4, 16, 10, 6, 2, 11, 12, 0], "backgroundColor": "#bab0ac", "borderColor": "#bab0ac", "borderWidth": 2}, {"label": "rafamfonseca", "data": [6, 5, 8, 11, 3, 6, 0, 5, 10, 5, 8, 12, 2, 1, 4, 2, 4, 2, 0, 2, 12, 11, 21, 5, 6, 12, 0], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "samiruppaluru", "data": [6, 2, 2, 4, 5, 4, 3, 5, 9, 4, 12, 6, 4, 7, 8, 8, 6, 4, 23, 2, 6, 25, 10, 16, 10, 0, 0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "scootklein", "data": [1, 0, 3, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 5, 9, 23, 2], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [30, 23, 17, 26, 20, 20, 24, 36, 37, 27, 19, 20, 17, 18, 17, 17, 33, 29, 21, 11, 28, 25, 28, 38, 31, 19, 0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "aguiartiago", "data": [9, 4, 6, 10, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "arthuravilamb", "data": [5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "factory-droid", "data": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "fernandatw", "data": [6, 10, 5, 3, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "getjoey", "data": [0, 0, 7, 7, 10, 18, 10, 13, 5, 4, 15, 6, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "guilhermehpsm", "data": [4, 6, 15, 14, 11, 12, 8, 3, 15, 7, 1, 2, 6, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}, {"label": "linuxlewis", "data": [24, 25, 12, 7, 28, 18, 19, 14, 20, 11, 15, 8, 9, 10, 33, 22, 28, 14, 14, 5, 29, 25, 18, 42, 13, 15, 0], "backgroundColor": "#9c755f", "borderColor": "#9c755f", "borderWidth": 2}, {"label": "lucascamposj", "data": [9, 11, 7, 7, 8, 10, 11, 9, 14, 7, 8, 9, 5, 8, 14, 11, 10, 4, 15, 4, 16, 10, 6, 2, 11, 12, 0], "backgroundColor": "#bab0ac", "borderColor": "#bab0ac", "borderWidth": 2}, {"label": "rafamfonseca", "data": [6, 5, 8, 11, 3, 6, 0, 5, 10, 5, 8, 12, 2, 1, 4, 2, 4, 2, 0, 2, 12, 11, 21, 5, 6, 12, 0], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "samiruppaluru", "data": [6, 2, 2, 4, 5, 4, 3, 5, 9, 4, 12, 6, 4, 7, 8, 8, 6, 4, 23, 2, 6, 25, 10, 16, 10, 0, 0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "scootklein", "data": [1, 0, 3, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}] },
   options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
 });
 
 // Stacked bar: opened by author
 new Chart(document.getElementById('openedChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 8, 9, 23, 2], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [32, 24, 18, 30, 19, 21, 28, 38, 38, 31, 20, 23, 23, 17, 20, 19, 34, 31, 19, 11, 37, 22, 31, 39, 36, 19, 0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "aguiartiago", "data": [9, 7, 6, 9, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "arthuravilamb", "data": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "factory-droid", "data": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "fernandatw", "data": [8, 10, 8, 4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "getjoey", "data": [0, 0, 13, 8, 15, 18, 10, 14, 5, 7, 19, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "guilhermehpsm", "data": [5, 6, 15, 14, 12, 13, 8, 3, 19, 6, 0, 3, 6, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}, {"label": "linuxlewis", "data": [25, 25, 14, 7, 27, 19, 21, 16, 19, 12, 13, 10, 7, 11, 36, 21, 29, 12, 15, 7, 33, 29, 23, 44, 11, 23, 0], "backgroundColor": "#9c755f", "borderColor": "#9c755f", "borderWidth": 2}, {"label": "lucascamposj", "data": [8, 12, 6, 8, 10, 12, 9, 10, 13, 10, 10, 6, 6, 14, 11, 14, 6, 7, 14, 8, 12, 13, 5, 3, 17, 13, 0], "backgroundColor": "#bab0ac", "borderColor": "#bab0ac", "borderWidth": 2}, {"label": "rafamfonseca", "data": [5, 6, 10, 10, 7, 4, 0, 6, 10, 7, 7, 13, 2, 1, 5, 2, 5, 3, 0, 3, 12, 13, 23, 7, 2, 15, 0], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "samiruppaluru", "data": [5, 2, 1, 5, 4, 4, 3, 6, 8, 5, 11, 7, 5, 5, 9, 8, 6, 4, 24, 2, 8, 25, 8, 15, 10, 0, 0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "scootklein", "data": [0, 1, 2, 0, 2, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 8, 9, 23, 2], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [32, 24, 18, 30, 19, 21, 28, 38, 38, 31, 20, 23, 23, 17, 20, 19, 34, 31, 19, 11, 37, 22, 31, 39, 36, 19, 1], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "aguiartiago", "data": [9, 7, 6, 9, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "arthuravilamb", "data": [3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "factory-droid", "data": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "fernandatw", "data": [8, 10, 8, 4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "getjoey", "data": [0, 0, 13, 8, 15, 18, 10, 14, 5, 7, 19, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "guilhermehpsm", "data": [5, 6, 15, 14, 12, 13, 8, 3, 19, 6, 0, 3, 6, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}, {"label": "linuxlewis", "data": [25, 25, 14, 7, 27, 19, 21, 16, 19, 12, 13, 10, 7, 11, 36, 21, 29, 12, 15, 7, 33, 29, 23, 44, 11, 23, 0], "backgroundColor": "#9c755f", "borderColor": "#9c755f", "borderWidth": 2}, {"label": "lucascamposj", "data": [8, 12, 6, 8, 10, 12, 9, 10, 13, 10, 10, 6, 6, 14, 11, 14, 6, 7, 14, 8, 12, 13, 5, 3, 17, 13, 0], "backgroundColor": "#bab0ac", "borderColor": "#bab0ac", "borderWidth": 2}, {"label": "rafamfonseca", "data": [5, 6, 10, 10, 7, 4, 0, 6, 10, 7, 7, 13, 2, 1, 5, 2, 5, 3, 0, 3, 12, 13, 23, 7, 2, 15, 0], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "samiruppaluru", "data": [5, 2, 1, 5, 4, 4, 3, 6, 8, 5, 11, 7, 5, 5, 9, 8, 6, 4, 24, 2, 8, 25, 8, 15, 10, 0, 0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "scootklein", "data": [0, 1, 2, 0, 2, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}] },
   options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
 });
 
@@ -283,14 +741,14 @@ new Chart(document.getElementById('shepherdChart'), {
 // Stacked bar: reviews by author
 new Chart(document.getElementById('reviewsChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 10, 16, 21, 0], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [9, 13, 8, 11, 12, 15, 11, 11, 14, 7, 13, 10, 8, 14, 14, 17, 23, 9, 19, 8, 15, 16, 12, 14, 31, 15, 0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "aguiartiago", "data": [13, 5, 8, 5, 1, 6, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "arthuravilamb", "data": [5, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "factory-droid", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "fernandatw", "data": [9, 12, 7, 17, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "getjoey", "data": [0, 0, 9, 7, 9, 15, 16, 16, 8, 7, 21, 10, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "guilhermehpsm", "data": [44, 36, 32, 33, 38, 47, 33, 28, 45, 25, 2, 22, 22, 19, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}, {"label": "linuxlewis", "data": [35, 37, 41, 22, 32, 43, 28, 31, 37, 20, 36, 19, 21, 26, 32, 27, 36, 29, 30, 21, 23, 26, 43, 53, 40, 56, 2], "backgroundColor": "#9c755f", "borderColor": "#9c755f", "borderWidth": 2}, {"label": "lucascamposj", "data": [30, 23, 15, 23, 17, 19, 22, 32, 35, 22, 19, 22, 15, 20, 22, 20, 20, 10, 20, 9, 27, 23, 27, 9, 10, 10, 0], "backgroundColor": "#bab0ac", "borderColor": "#bab0ac", "borderWidth": 2}, {"label": "rafamfonseca", "data": [10, 11, 9, 13, 9, 13, 0, 7, 23, 11, 10, 23, 10, 9, 30, 25, 24, 31, 23, 10, 30, 29, 26, 28, 36, 33, 0], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "samiruppaluru", "data": [8, 5, 8, 6, 3, 2, 2, 3, 5, 2, 10, 9, 5, 4, 10, 18, 10, 16, 16, 1, 12, 14, 13, 18, 12, 1, 0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "scootklein", "data": [1, 3, 11, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 10, 16, 21, 1], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [9, 13, 8, 11, 12, 15, 11, 11, 14, 7, 13, 10, 8, 14, 14, 17, 23, 9, 19, 8, 15, 16, 12, 14, 31, 15, 0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "aguiartiago", "data": [13, 5, 8, 5, 1, 6, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "arthuravilamb", "data": [5, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "factory-droid", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "fernandatw", "data": [9, 12, 7, 17, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "getjoey", "data": [0, 0, 9, 7, 9, 15, 16, 16, 8, 7, 21, 10, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "guilhermehpsm", "data": [44, 36, 32, 33, 38, 47, 33, 28, 45, 25, 2, 22, 22, 19, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}, {"label": "linuxlewis", "data": [35, 37, 41, 22, 32, 43, 28, 31, 37, 20, 36, 19, 21, 26, 32, 27, 36, 29, 30, 21, 23, 26, 43, 53, 40, 56, 3], "backgroundColor": "#9c755f", "borderColor": "#9c755f", "borderWidth": 2}, {"label": "lucascamposj", "data": [30, 23, 15, 23, 17, 19, 22, 32, 35, 22, 19, 22, 15, 20, 22, 20, 20, 10, 20, 9, 27, 23, 27, 9, 10, 10, 0], "backgroundColor": "#bab0ac", "borderColor": "#bab0ac", "borderWidth": 2}, {"label": "rafamfonseca", "data": [10, 11, 9, 13, 9, 13, 0, 7, 23, 11, 10, 23, 10, 9, 30, 25, 24, 31, 23, 10, 30, 29, 26, 28, 36, 33, 1], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "samiruppaluru", "data": [8, 5, 8, 6, 3, 2, 2, 3, 5, 2, 10, 9, 5, 4, 10, 18, 10, 16, 16, 1, 12, 14, 13, 18, 12, 1, 0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "scootklein", "data": [1, 3, 11, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}] },
   options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
 });
 
 // TTM by author (grouped bar)
 new Chart(document.getElementById('ttmAuthorChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 108.1, 89.1, 76.4, 44.0, null], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [16.6, 19.1, 43.2, 23.7, 87.1, 31.4, 25.5, 33.5, 15.1, 16.7, 38.7, 21.9, 48.0, 71.8, 52.8, 29.1, 16.7, 20.6, 59.7, 14.2, 23.2, 56.7, 35.0, 35.7, 17.2, 57.4, null], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "aguiartiago", "data": [15.3, 13.2, 90.1, 27.3, 308.8, 8.0, 68.5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "arthuravilamb", "data": [54.9, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "factory-droid", "data": [null, null, null, null, null, 72.7, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "fernandatw", "data": [89.6, 87.6, 35.9, 37.1, 159.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "getjoey", "data": [null, null, 22.0, 56.6, 23.3, 41.3, 28.9, 28.4, 10.7, 7.8, 38.4, 52.9, 282.4, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "guilhermehpsm", "data": [103.7, 50.7, 15.0, 14.8, 5.5, 11.1, 17.1, 28.7, 11.8, 72.6, 337.5, 22.2, 51.3, 96.6, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}, {"label": "linuxlewis", "data": [13.5, 9.9, 14.3, 19.9, 38.3, 11.8, 26.0, 30.8, 16.8, 13.3, 32.5, 21.0, 56.3, 15.2, 9.0, 19.5, 14.3, 26.5, 35.5, 21.3, 21.4, 50.0, 41.0, 47.7, 34.2, 17.4, null], "backgroundColor": "#9c755f", "borderColor": "#9c755f", "borderWidth": 2}, {"label": "lucascamposj", "data": [22.3, 11.9, 26.2, 13.2, 10.0, 25.9, 29.4, 6.4, 20.6, 28.3, 27.3, 56.8, 13.2, 31.9, 70.8, 35.6, 40.9, 4.5, 49.4, 65.7, 50.4, 16.1, 22.9, 44.6, 33.0, 38.3, null], "backgroundColor": "#bab0ac", "borderColor": "#bab0ac", "borderWidth": 2}, {"label": "rafamfonseca", "data": [34.0, 9.4, 25.9, 16.1, 41.0, 39.5, null, 12.0, 14.6, 26.8, 32.0, 17.0, 0.4, 2.8, 10.0, 14.5, 36.2, 81.2, null, 12.0, 22.9, 48.3, 32.2, 190.1, 119.1, 15.3, null], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "samiruppaluru", "data": [59.2, 8.4, 433.9, 36.5, 40.8, 5.3, 10.9, 26.3, 24.7, 4.7, 29.0, 12.1, 104.3, 26.7, 26.2, 42.5, 58.4, 92.5, 17.9, 70.2, 87.5, 40.3, 49.4, 31.5, 27.1, null, null], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "scootklein", "data": [67.0, null, 48.2, null, 93.2, null, 2.1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 108.1, 89.1, 76.4, 44.0, 8.6], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [16.6, 19.1, 43.2, 23.7, 87.1, 31.4, 25.5, 33.5, 15.1, 16.7, 38.7, 21.9, 48.0, 71.8, 52.8, 29.1, 16.7, 20.6, 59.7, 14.2, 23.2, 56.7, 35.0, 35.7, 17.2, 57.4, null], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "aguiartiago", "data": [15.3, 13.2, 90.1, 27.3, 308.8, 8.0, 68.5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "arthuravilamb", "data": [54.9, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "factory-droid", "data": [null, null, null, null, null, 72.7, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "fernandatw", "data": [89.6, 87.6, 35.9, 37.1, 159.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "getjoey", "data": [null, null, 22.0, 56.6, 23.3, 41.3, 28.9, 28.4, 10.7, 7.8, 38.4, 52.9, 282.4, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "guilhermehpsm", "data": [103.7, 50.7, 15.0, 14.8, 5.5, 11.1, 17.1, 28.7, 11.8, 72.6, 337.5, 22.2, 51.3, 96.6, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}, {"label": "linuxlewis", "data": [13.5, 9.9, 14.3, 19.9, 38.3, 11.8, 26.0, 30.8, 16.8, 13.3, 32.5, 21.0, 56.3, 15.2, 9.0, 19.5, 14.3, 26.5, 35.5, 21.3, 21.4, 50.0, 41.0, 47.7, 34.2, 17.4, null], "backgroundColor": "#9c755f", "borderColor": "#9c755f", "borderWidth": 2}, {"label": "lucascamposj", "data": [22.3, 11.9, 26.2, 13.2, 10.0, 25.9, 29.4, 6.4, 20.6, 28.3, 27.3, 56.8, 13.2, 31.9, 70.8, 35.6, 40.9, 4.5, 49.4, 65.7, 50.4, 16.1, 22.9, 44.6, 33.0, 38.3, null], "backgroundColor": "#bab0ac", "borderColor": "#bab0ac", "borderWidth": 2}, {"label": "rafamfonseca", "data": [34.0, 9.4, 25.9, 16.1, 41.0, 39.5, null, 12.0, 14.6, 26.8, 32.0, 17.0, 0.4, 2.8, 10.0, 14.5, 36.2, 81.2, null, 12.0, 22.9, 48.3, 32.2, 190.1, 119.1, 15.3, null], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "samiruppaluru", "data": [59.2, 8.4, 433.9, 36.5, 40.8, 5.3, 10.9, 26.3, 24.7, 4.7, 29.0, 12.1, 104.3, 26.7, 26.2, 42.5, 58.4, 92.5, 17.9, 70.2, 87.5, 40.3, 49.4, 31.5, 27.1, null, null], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "scootklein", "data": [67.0, null, 48.2, null, 93.2, null, 2.1, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}] },
   options: chartDefaults,
 });
 
@@ -301,7 +759,7 @@ new Chart(document.getElementById('qtrPerEngChart'), {
   data: {
     labels: qtrLabels,
     datasets: [
-      { label: 'PRs/Engineer', data: [10.0, 47.2, 71.0, 73.4, 90.0], backgroundColor: '#58a6ff', borderColor: '#58a6ff', borderWidth: 2 },
+      { label: 'PRs/Engineer', data: [10.0, 47.2, 71.0, 73.4, 90.3], backgroundColor: '#58a6ff', borderColor: '#58a6ff', borderWidth: 2 },
     ],
   },
   options: {
@@ -313,7 +771,7 @@ new Chart(document.getElementById('qtrPerEngChart'), {
           afterLabel: function(ctx) {
             const i = ctx.dataIndex;
             const counts = [10, 11, 7, 5, 6];
-            const totals = [100, 519, 497, 367, 540];
+            const totals = [100, 519, 497, 367, 542];
             return `${totals[i]} total PRs / ${counts[i]} engineers`;
           }
         }
@@ -328,7 +786,7 @@ new Chart(document.getElementById('qtrTotalsChart'), {
   data: {
     labels: qtrLabels,
     datasets: [
-      { label: 'Human PRs', data: [100, 519, 497, 367, 540], backgroundColor: '#4e79a7' },
+      { label: 'Human PRs', data: [100, 519, 497, 367, 542], backgroundColor: '#4e79a7' },
       { label: 'AI PRs', data: [12, 107, 125, 175, 189], backgroundColor: '#b07aa1' },
     ],
   },
