@@ -36,6 +36,7 @@ REPOS = [
     "infrastructure",
 ]
 CYCLE_DAYS = 14
+QUARTERLY_PRS_PER_ENGINEER_TARGET = 100
 
 # Bot accounts to exclude from all stats
 BOTS = {
@@ -208,6 +209,21 @@ def fmt_duration(hours: float) -> str:
     else:
         days = hours / 24
         return f"{days:.1f}d"
+
+
+def quarter_sort_key(label: str) -> tuple[int, int]:
+    quarter, year = label.split()
+    return int(year), int(quarter[1:])
+
+
+def quarter_bounds(dt: datetime) -> tuple[datetime, datetime]:
+    start_month = ((dt.month - 1) // 3) * 3 + 1
+    quarter_start = dt.replace(month=start_month, day=1)
+    if start_month == 10:
+        quarter_end = dt.replace(year=dt.year + 1, month=1, day=1) - timedelta(days=1)
+    else:
+        quarter_end = dt.replace(month=start_month + 3, day=1) - timedelta(days=1)
+    return quarter_start, quarter_end
 
 
 def avg_ttm(prs: list[dict]) -> float | None:
@@ -527,8 +543,9 @@ def generate_html_report(
         quarterly_ai[quarter] += len(ai_merged_q)
 
     # Build quarterly PRs/engineer data
-    quarter_labels = sorted(quarterly_data.keys(), key=lambda q: (int(q.split()[1]), int(q[1])))
+    quarter_labels = sorted(quarterly_data.keys(), key=quarter_sort_key)
     quarterly_prs_per_eng = []
+    quarterly_prs_per_eng_projection = []
     quarterly_total_merged = []
     quarterly_total_ai = []
     quarterly_engineer_count = []
@@ -542,6 +559,54 @@ def generate_html_report(
         quarterly_total_ai.append(quarterly_ai.get(q, 0))
         quarterly_engineer_count.append(eng_count)
         quarterly_prs_per_eng.append(round(total / eng_count, 1) if eng_count else 0)
+        quarterly_prs_per_eng_projection.append(None)
+
+    current_quarter_label = get_quarter(end_date)
+    current_quarter_start, current_quarter_end = quarter_bounds(end_date)
+    current_quarter_total_days = (current_quarter_end - current_quarter_start).days + 1
+    current_quarter_elapsed_days = max(1, min((end_date - current_quarter_start).days + 1, current_quarter_total_days))
+    current_quarter_total_merged = sum(quarterly_data[current_quarter_label].values())
+    current_quarter_engineer_count = len(quarterly_authors[current_quarter_label])
+    current_quarter_prs_per_eng = (
+        round(current_quarter_total_merged / current_quarter_engineer_count, 1)
+        if current_quarter_engineer_count else 0
+    )
+    current_quarter_projected_prs_per_eng = (
+        round(current_quarter_prs_per_eng * current_quarter_total_days / current_quarter_elapsed_days, 1)
+        if current_quarter_engineer_count else 0
+    )
+    current_quarter_days_remaining = max(current_quarter_total_days - current_quarter_elapsed_days, 0)
+    current_quarter_target_total_prs = QUARTERLY_PRS_PER_ENGINEER_TARGET * current_quarter_engineer_count
+    current_quarter_prs_needed = max(current_quarter_target_total_prs - current_quarter_total_merged, 0)
+    current_quarter_required_daily_prs = (
+        round(current_quarter_prs_needed / current_quarter_days_remaining, 1)
+        if current_quarter_days_remaining else 0
+    )
+    current_quarter_progress_pct = round(current_quarter_elapsed_days / current_quarter_total_days * 100, 1)
+    current_quarter_on_track = current_quarter_projected_prs_per_eng >= QUARTERLY_PRS_PER_ENGINEER_TARGET
+    current_quarter_status = "On track" if current_quarter_on_track else "Off track"
+    current_quarter_status_class = "kpi-on-track" if current_quarter_on_track else "kpi-off-track"
+    current_quarter_gap = round(
+        current_quarter_projected_prs_per_eng - QUARTERLY_PRS_PER_ENGINEER_TARGET,
+        1,
+    )
+    current_quarter_summary = (
+        f"At the current pace, {current_quarter_label} is projected to finish at "
+        f"{current_quarter_projected_prs_per_eng:.1f} PRs per engineer, "
+        f"{abs(current_quarter_gap):.1f} {'above' if current_quarter_on_track else 'below'} "
+        f"the {QUARTERLY_PRS_PER_ENGINEER_TARGET} PR/engineer KPI."
+    )
+    if not current_quarter_on_track and current_quarter_days_remaining:
+        current_quarter_summary += (
+            f" Need {current_quarter_prs_needed} more merged PRs across the team, "
+            f"or about {current_quarter_required_daily_prs:.1f}/day for the rest of the quarter."
+        )
+
+    if current_quarter_label in quarter_labels:
+        current_quarter_index = quarter_labels.index(current_quarter_label)
+        quarterly_prs_per_eng_projection[current_quarter_index] = current_quarter_projected_prs_per_eng
+
+    quarterly_target_line = [QUARTERLY_PRS_PER_ENGINEER_TARGET for _ in quarter_labels]
 
     # Colors for each author
     palette = [
@@ -707,6 +772,13 @@ def generate_html_report(
   .summary-grid {{ display: grid; gap: 24px; margin-bottom: 32px; }}
   .summary-box {{ margin-bottom: 0; }}
   .section-subtitle {{ color: #8b949e; margin: -8px 0 16px; font-size: 0.9rem; }}
+  .kpi-grid {{ margin-bottom: 16px; }}
+  .kpi-box {{ margin-bottom: 32px; }}
+  .kpi-summary {{ color: #c9d1d9; line-height: 1.5; }}
+  .kpi-summary strong {{ color: #fff; }}
+  .kpi-status {{ display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }}
+  .kpi-on-track {{ color: #3fb950; background: rgba(63, 185, 80, 0.14); }}
+  .kpi-off-track {{ color: #ff7b72; background: rgba(255, 123, 114, 0.14); }}
 </style>
 </head>
 <body>
@@ -753,6 +825,20 @@ def generate_html_report(
     <h2>Avg Time to Merge by Author (hours)</h2>
     <canvas id="ttmAuthorChart"></canvas>
   </div>
+</div>
+
+<div class="chart-box kpi-box">
+  <h2>{current_quarter_label} KPI Pace</h2>
+  <p class="section-subtitle">KPI target: {QUARTERLY_PRS_PER_ENGINEER_TARGET} PRs per engineer for {current_quarter_label} ({fmt_date(current_quarter_start)} → {fmt_date(current_quarter_end)}).</p>
+  <div class="cards kpi-grid">
+    <div class="card"><div class="value">{current_quarter_prs_per_eng:.1f}</div><div class="label">Actual PRs/Engineer</div></div>
+    <div class="card"><div class="value">{current_quarter_projected_prs_per_eng:.1f}</div><div class="label">Projected PRs/Engineer</div></div>
+    <div class="card"><div class="value">{current_quarter_total_merged}</div><div class="label">Merged PRs This Quarter</div></div>
+    <div class="card"><div class="value">{current_quarter_engineer_count}</div><div class="label">Active Engineers</div></div>
+    <div class="card"><div class="value">{current_quarter_progress_pct:.1f}%</div><div class="label">Quarter Elapsed</div></div>
+    <div class="card"><div class="value"><span class="kpi-status {current_quarter_status_class}">{current_quarter_status}</span></div><div class="label">KPI Status</div></div>
+  </div>
+  <p class="kpi-summary"><strong>{current_quarter_label} outlook:</strong> {current_quarter_summary}</p>
 </div>
 
 <div class="chart-grid">
@@ -858,7 +944,9 @@ new Chart(document.getElementById('qtrPerEngChart'), {{
   data: {{
     labels: qtrLabels,
     datasets: [
-      {{ label: 'PRs/Engineer', data: {json.dumps(quarterly_prs_per_eng)}, backgroundColor: '#58a6ff', borderColor: '#58a6ff', borderWidth: 2 }},
+      {{ label: 'Actual PRs/Engineer', data: {json.dumps(quarterly_prs_per_eng)}, backgroundColor: '#58a6ff', borderColor: '#58a6ff', borderWidth: 2 }},
+      {{ label: 'Projected Quarter Pace', data: {json.dumps(quarterly_prs_per_eng_projection)}, backgroundColor: '#f28e2b', borderColor: '#f28e2b', borderWidth: 2 }},
+      {{ label: 'KPI Target', data: {json.dumps(quarterly_target_line)}, type: 'line', borderColor: '#3fb950', backgroundColor: '#3fb950', borderWidth: 2, borderDash: [6, 6], pointRadius: 0, tension: 0 }},
     ],
   }},
   options: {{
@@ -871,7 +959,12 @@ new Chart(document.getElementById('qtrPerEngChart'), {{
             const i = ctx.dataIndex;
             const counts = {json.dumps(quarterly_engineer_count)};
             const totals = {json.dumps(quarterly_total_merged)};
-            return `${{totals[i]}} total PRs / ${{counts[i]}} engineers`;
+            const projected = {json.dumps(quarterly_prs_per_eng_projection)};
+            const lines = [`${{totals[i]}} total PRs / ${{counts[i]}} engineers`];
+            if (projected[i] !== null && projected[i] !== undefined) {{
+              lines.push(`Projected finish: ${{projected[i]}} PRs/engineer`);
+            }}
+            return lines;
           }}
         }}
       }}
