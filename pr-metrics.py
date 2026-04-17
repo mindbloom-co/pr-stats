@@ -36,7 +36,7 @@ REPOS = [
     "infrastructure",
 ]
 CYCLE_DAYS = 14
-QUARTERLY_PRS_PER_ENGINEER_TARGET = 100
+QUARTERLY_PRS_PER_ENGINEER_TARGET = 90
 
 # Bot accounts to exclude from all stats
 BOTS = {
