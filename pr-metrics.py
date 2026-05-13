@@ -189,7 +189,7 @@ def build_cycles(start: datetime, end: datetime) -> list[tuple[datetime, datetim
     """Split a date range into 2-week cycles."""
     cycles = []
     current = start
-    while current < end:
+    while current <= end:
         cycle_end = min(current + timedelta(days=CYCLE_DAYS - 1), end)
         cycles.append((current, cycle_end))
         current += timedelta(days=CYCLE_DAYS)
