@@ -43,9 +43,12 @@ BOTS = {
     "gemini-code-assist",
     "devin-ai-integration",
     "github-actions",
+    "github-advanced-security",
     "dependabot",
     "claude",
     "coderabbitai",
+    "chatgpt-codex-connector",
+    "blacksmith-sh",
 }
 
 # AI coding agents — their PRs get attributed to the human who approved them
