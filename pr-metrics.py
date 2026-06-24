@@ -51,6 +51,11 @@ BOTS = {
     "blacksmith-sh",
 }
 
+# Human accounts to exclude from current team KPI reporting
+EXCLUDED_USERS = {
+    "gracesliu",
+}
+
 # AI coding agents — their PRs get attributed to the human who approved them
 AI_AGENTS = {"devin-ai-integration"}
 
@@ -177,7 +182,7 @@ def fetch_opened_prs(repo: str, start: str, end: str) -> list[dict]:
 # ── Helpers ─────────────────────────────────────────────────
 
 def is_human(username: str) -> bool:
-    return username not in BOTS
+    return username not in BOTS and username not in EXCLUDED_USERS
 
 
 def count_sorted(items: list[str]) -> list[tuple[str, int]]:
