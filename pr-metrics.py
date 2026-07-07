@@ -198,9 +198,10 @@ def build_cycles(start: datetime, end: datetime) -> list[tuple[datetime, datetim
     cycles = []
     current = start
     while current <= end:
-        cycle_end = min(current + timedelta(days=CYCLE_DAYS - 1), end)
+        _, current_quarter_end = quarter_bounds(current)
+        cycle_end = min(current + timedelta(days=CYCLE_DAYS - 1), current_quarter_end, end)
         cycles.append((current, cycle_end))
-        current += timedelta(days=CYCLE_DAYS)
+        current = cycle_end + timedelta(days=1)
     return cycles
 
 
