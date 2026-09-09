@@ -22,6 +22,7 @@ Requires: gh (GitHub CLI) authenticated with org access
 import json
 import subprocess
 import sys
+import time
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
@@ -64,17 +65,39 @@ AI_AGENTS = {"devin-ai-integration"}
 
 def gh_graphql(query: str) -> dict:
     """Run a GraphQL query via the gh CLI and return parsed JSON."""
-    result = subprocess.run(
-        ["gh", "api", "graphql", "-f", f"query={query}"],
-        capture_output=True, text=True,
-    )
-    if result.returncode != 0:
-        return {}
-    return json.loads(result.stdout)
+    for attempt in range(3):
+        result = subprocess.run(
+            ["gh", "api", "graphql", "-f", f"query={query}"],
+            capture_output=True, text=True,
+        )
+        data = json.loads(result.stdout) if result.stdout.strip() else {}
+        if result.returncode == 0 and data.get("data") and not data.get("errors"):
+            return data
+        error = result.stderr.strip() or str(data.get("errors", "Empty GitHub response"))
+        if attempt < 2:
+            print(f"GitHub request failed; retrying: {error}", file=sys.stderr)
+            time.sleep(2 ** attempt)
+    raise RuntimeError(f"GitHub request failed after 3 attempts: {error}")
 
 
 def _paginated_search(search_query: str, extra_fields: str = "") -> list[dict]:
+    for attempt in range(3):
+        try:
+            return _paginated_search_once(search_query, extra_fields)
+        except RuntimeError:
+            if attempt == 2:
+                raise
+            print(f"Incomplete search; retrying: {search_query}", file=sys.stderr)
+            time.sleep(2 ** attempt)
+    raise RuntimeError("Search retries exhausted")
+
+
+def _paginated_search_once(search_query: str, extra_fields: str = "") -> list[dict]:
     """Generic paginated GitHub search returning PR nodes."""
+    count_data = gh_graphql(f'{{ search(query: "{search_query}", type: ISSUE, first: 1) {{ issueCount }} }}')
+    expected_count = (count_data["data"].get("search") or {}).get("issueCount")
+    if expected_count is None:
+        raise RuntimeError(f"Missing search count: {search_query}")
     results = []
     has_next = True
     cursor = None
@@ -83,6 +106,7 @@ def _paginated_search(search_query: str, extra_fields: str = "") -> list[dict]:
         after = f', after: "{cursor}"' if cursor else ""
         query = f"""{{
             search(query: "{search_query}", type: ISSUE, first: 100{after}) {{
+                issueCount
                 pageInfo {{ hasNextPage endCursor }}
                 nodes {{
                     ... on PullRequest {{
@@ -96,15 +120,19 @@ def _paginated_search(search_query: str, extra_fields: str = "") -> list[dict]:
         }}"""
 
         data = gh_graphql(query)
-        if not data:
-            break
-
-        search_data = data.get("data", {}).get("search", {})
-        page_info = search_data.get("pageInfo", {})
-        results.extend(search_data.get("nodes", []))
+        search_data = data["data"].get("search")
+        if not search_data or not {"issueCount", "pageInfo", "nodes"} <= search_data.keys():
+            raise RuntimeError(f"Invalid search response: {search_query}")
+        page_info = search_data["pageInfo"]
+        results.extend(search_data["nodes"])
 
         has_next = page_info.get("hasNextPage", False)
         cursor = page_info.get("endCursor")
+        if has_next and not cursor:
+            raise RuntimeError(f"Missing search cursor: {search_query}")
+
+    if len(results) != search_data["issueCount"] or len(results) != expected_count:
+        raise RuntimeError(f"Incomplete search results: {search_query}")
 
     return results
 
