@@ -1,0 +1,874 @@
+[
+ {
+  "repo": "mindbloomMobile",
+  "n": 3653,
+  "author": "MaGomesP",
+  "created": "2026-10-19T19:19:28Z",
+  "merged": "2026-10-19T19:26:52Z",
+  "days": 0.005138888888888889
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3652,
+  "author": "MaGomesP",
+  "created": "2026-10-19T17:59:06Z",
+  "merged": "2026-10-19T18:52:20Z",
+  "days": 0.036967592592592594
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3648,
+  "author": "MaGomesP",
+  "created": "2026-10-19T15:15:27Z",
+  "merged": "2026-10-19T19:04:52Z",
+  "days": 0.15931712962962963
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3646,
+  "author": "MaGomesP",
+  "created": "2026-10-15T22:57:15Z",
+  "merged": "2026-10-16T00:31:49Z",
+  "days": 0.0656712962962963
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3636,
+  "author": "MaGomesP",
+  "created": "2026-10-09T22:49:42Z",
+  "merged": "2026-10-12T02:51:37Z",
+  "days": 2.167997685185185
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3632,
+  "author": "MaGomesP",
+  "created": "2026-10-07T16:07:33Z",
+  "merged": "2026-10-09T17:13:04Z",
+  "days": 2.045497685185185
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3631,
+  "author": "MaGomesP",
+  "created": "2026-10-07T15:20:43Z",
+  "merged": "2026-10-07T17:48:04Z",
+  "days": 0.10232638888888888
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3630,
+  "author": "MaGomesP",
+  "created": "2026-10-06T22:15:25Z",
+  "merged": "2026-10-07T17:28:45Z",
+  "days": 0.8009259259259259
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3629,
+  "author": "MaGomesP",
+  "created": "2026-10-06T19:55:05Z",
+  "merged": "2026-10-06T20:18:23Z",
+  "days": 0.016180555555555556
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3628,
+  "author": "MaGomesP",
+  "created": "2026-10-06T19:16:58Z",
+  "merged": "2026-10-07T17:17:49Z",
+  "days": 0.9172569444444445
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3626,
+  "author": "lucascamposj",
+  "created": "2026-10-06T13:33:17Z",
+  "merged": "2026-10-06T18:32:33Z",
+  "days": 0.20782407407407408
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3625,
+  "author": "lucascamposj",
+  "created": "2026-10-05T17:13:15Z",
+  "merged": "2026-10-06T17:39:08Z",
+  "days": 1.017974537037037
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3624,
+  "author": "MaGomesP",
+  "created": "2026-10-05T17:11:16Z",
+  "merged": "2026-10-05T17:33:58Z",
+  "days": 0.01576388888888889
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3619,
+  "author": "MaGomesP",
+  "created": "2026-10-02T18:37:37Z",
+  "merged": "2026-10-06T22:53:10Z",
+  "days": 4.177465277777777
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3618,
+  "author": "lucascamposj",
+  "created": "2026-10-01T20:02:02Z",
+  "merged": "2026-10-02T23:29:01Z",
+  "days": 1.143738425925926
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3617,
+  "author": "lucascamposj",
+  "created": "2026-10-01T19:21:12Z",
+  "merged": "2026-10-01T19:44:04Z",
+  "days": 0.01587962962962963
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3614,
+  "author": "lucascamposj",
+  "created": "2026-10-01T14:55:23Z",
+  "merged": "2026-10-02T21:52:02Z",
+  "days": 1.2893402777777778
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3613,
+  "author": "lucascamposj",
+  "created": "2026-10-01T14:25:09Z",
+  "merged": "2026-10-02T15:39:34Z",
+  "days": 1.0516782407407408
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6185,
+  "author": "linuxlewis",
+  "created": "2026-10-21T03:21:10Z",
+  "merged": "2026-10-21T13:56:49Z",
+  "days": 0.4414236111111111
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6184,
+  "author": "linuxlewis",
+  "created": "2026-10-20T20:18:50Z",
+  "merged": "2026-10-21T00:52:38Z",
+  "days": 0.19013888888888889
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6178,
+  "author": "MaGomesP",
+  "created": "2026-10-19T17:50:14Z",
+  "merged": "2026-10-19T18:57:38Z",
+  "days": 0.04680555555555556
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6174,
+  "author": "linuxlewis",
+  "created": "2026-10-16T00:47:20Z",
+  "merged": "2026-10-16T20:54:25Z",
+  "days": 0.8382523148148148
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6172,
+  "author": "linuxlewis",
+  "created": "2026-10-14T22:35:14Z",
+  "merged": "2026-10-14T22:36:40Z",
+  "days": 0.0009953703703703704
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6163,
+  "author": "linuxlewis",
+  "created": "2026-10-09T15:04:53Z",
+  "merged": "2026-10-09T15:46:44Z",
+  "days": 0.0290625
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6162,
+  "author": "lucascamposj",
+  "created": "2026-10-09T14:49:58Z",
+  "merged": "2026-10-09T15:26:30Z",
+  "days": 0.02537037037037037
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6160,
+  "author": "lucascamposj",
+  "created": "2026-10-09T14:40:10Z",
+  "merged": "2026-10-09T15:09:01Z",
+  "days": 0.02003472222222222
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6159,
+  "author": "Jamesl28",
+  "created": "2026-10-09T06:49:40Z",
+  "merged": "2026-10-09T17:31:38Z",
+  "days": 0.44581018518518517
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6156,
+  "author": "linuxlewis",
+  "created": "2026-10-08T23:07:44Z",
+  "merged": "2026-10-09T01:19:32Z",
+  "days": 0.09152777777777778
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6155,
+  "author": "Jamesl28",
+  "created": "2026-10-08T22:50:31Z",
+  "merged": "2026-10-08T23:06:26Z",
+  "days": 0.01105324074074074
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6153,
+  "author": "lucascamposj",
+  "created": "2026-10-08T16:30:17Z",
+  "merged": "2026-10-08T16:55:27Z",
+  "days": 0.01747685185185185
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6152,
+  "author": "lucascamposj",
+  "created": "2026-10-08T14:11:24Z",
+  "merged": "2026-10-08T16:21:02Z",
+  "days": 0.09002314814814814
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6151,
+  "author": "Jamesl28",
+  "created": "2026-10-08T01:50:20Z",
+  "merged": "2026-10-08T03:31:40Z",
+  "days": 0.07037037037037037
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6148,
+  "author": "linuxlewis",
+  "created": "2026-10-07T22:12:24Z",
+  "merged": "2026-10-09T17:14:36Z",
+  "days": 1.7931944444444445
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6147,
+  "author": "linuxlewis",
+  "created": "2026-10-07T21:55:49Z",
+  "merged": "2026-10-08T17:45:15Z",
+  "days": 0.8259953703703704
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6145,
+  "author": "lucascamposj",
+  "created": "2026-10-07T20:51:13Z",
+  "merged": "2026-10-08T01:51:19Z",
+  "days": 0.20840277777777777
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6144,
+  "author": "lucascamposj",
+  "created": "2026-10-07T20:50:56Z",
+  "merged": "2026-10-08T13:38:14Z",
+  "days": 0.6995138888888889
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6143,
+  "author": "linuxlewis",
+  "created": "2026-10-07T19:06:25Z",
+  "merged": "2026-10-07T19:16:55Z",
+  "days": 0.007291666666666667
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6142,
+  "author": "linuxlewis",
+  "created": "2026-10-07T18:52:09Z",
+  "merged": "2026-10-07T19:13:17Z",
+  "days": 0.014675925925925926
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6137,
+  "author": "lucascamposj",
+  "created": "2026-10-06T21:32:49Z",
+  "merged": "2026-10-07T20:27:49Z",
+  "days": 0.9548611111111112
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6135,
+  "author": "MaGomesP",
+  "created": "2026-10-06T17:12:00Z",
+  "merged": "2026-10-08T01:25:24Z",
+  "days": 1.342638888888889
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6134,
+  "author": "rafamfonseca",
+  "created": "2026-10-06T16:52:22Z",
+  "merged": "2026-10-06T17:32:57Z",
+  "days": 0.028182870370370372
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6133,
+  "author": "rafamfonseca",
+  "created": "2026-10-06T15:44:21Z",
+  "merged": "2026-10-07T16:00:38Z",
+  "days": 1.0113078703703704
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6132,
+  "author": "linuxlewis",
+  "created": "2026-10-06T15:30:27Z",
+  "merged": "2026-10-06T23:21:02Z",
+  "days": 0.3267939814814815
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6130,
+  "author": "Jamesl28",
+  "created": "2026-10-06T00:37:59Z",
+  "merged": "2026-10-06T02:57:56Z",
+  "days": 0.0971875
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6129,
+  "author": "rafamfonseca",
+  "created": "2026-10-06T00:35:07Z",
+  "merged": "2026-10-08T20:13:45Z",
+  "days": 2.8184953703703703
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6126,
+  "author": "linuxlewis",
+  "created": "2026-10-05T22:38:58Z",
+  "merged": "2026-10-07T17:07:14Z",
+  "days": 1.7696296296296297
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6125,
+  "author": "linuxlewis",
+  "created": "2026-10-05T16:52:07Z",
+  "merged": "2026-10-05T23:49:38Z",
+  "days": 0.2899421296296296
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6124,
+  "author": "lucascamposj",
+  "created": "2026-10-05T16:13:20Z",
+  "merged": "2026-10-05T16:46:44Z",
+  "days": 0.023194444444444445
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6122,
+  "author": "linuxlewis",
+  "created": "2026-10-05T14:56:13Z",
+  "merged": "2026-10-06T18:02:00Z",
+  "days": 1.1290162037037037
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6119,
+  "author": "Jamesl28",
+  "created": "2026-10-02T19:18:45Z",
+  "merged": "2026-10-05T06:19:13Z",
+  "days": 2.4586574074074075
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6118,
+  "author": "Jamesl28",
+  "created": "2026-10-02T17:37:06Z",
+  "merged": "2026-10-05T06:51:00Z",
+  "days": 2.5513194444444443
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6117,
+  "author": "linuxlewis",
+  "created": "2026-10-02T16:14:54Z",
+  "merged": "2026-10-02T20:33:27Z",
+  "days": 0.17954861111111112
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6116,
+  "author": "Jamesl28",
+  "created": "2026-10-02T15:34:30Z",
+  "merged": "2026-10-05T05:04:11Z",
+  "days": 2.5622800925925926
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6115,
+  "author": "linuxlewis",
+  "created": "2026-10-02T14:41:15Z",
+  "merged": "2026-10-02T17:51:26Z",
+  "days": 0.13207175925925926
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6113,
+  "author": "Jamesl28",
+  "created": "2026-10-01T21:45:10Z",
+  "merged": "2026-10-02T04:43:59Z",
+  "days": 0.2908449074074074
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6112,
+  "author": "lucascamposj",
+  "created": "2026-10-01T20:01:57Z",
+  "merged": "2026-10-06T19:54:21Z",
+  "days": 4.994722222222222
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6105,
+  "author": "lucascamposj",
+  "created": "2026-09-30T17:35:52Z",
+  "merged": "2026-10-01T21:24:01Z",
+  "days": 1.1584375
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6096,
+  "author": "linuxlewis",
+  "created": "2026-09-29T18:50:23Z",
+  "merged": "2026-10-02T01:35:10Z",
+  "days": 2.281099537037037
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6090,
+  "author": "linuxlewis",
+  "created": "2026-09-29T17:01:26Z",
+  "merged": "2026-10-01T23:58:15Z",
+  "days": 2.2894560185185187
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6088,
+  "author": "linuxlewis",
+  "created": "2026-09-29T16:52:08Z",
+  "merged": "2026-10-01T23:30:09Z",
+  "days": 2.276400462962963
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6086,
+  "author": "linuxlewis",
+  "created": "2026-09-29T16:48:27Z",
+  "merged": "2026-10-06T22:44:41Z",
+  "days": 7.24738425925926
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6064,
+  "author": "lucascamposj",
+  "created": "2026-09-25T14:13:48Z",
+  "merged": "2026-10-02T17:29:32Z",
+  "days": 7.135925925925926
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6055,
+  "author": "lucascamposj",
+  "created": "2026-09-24T17:31:46Z",
+  "merged": "2026-10-01T21:52:51Z",
+  "days": 7.181307870370371
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6044,
+  "author": "rafamfonseca",
+  "created": "2026-09-23T17:09:41Z",
+  "merged": "2026-10-08T12:47:40Z",
+  "days": 14.818043981481482
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6042,
+  "author": "rafamfonseca",
+  "created": "2026-09-23T16:11:49Z",
+  "merged": "2026-10-06T00:13:43Z",
+  "days": 12.334652777777778
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6029,
+  "author": "Jamesl28",
+  "created": "2026-09-22T17:01:42Z",
+  "merged": "2026-10-02T03:52:01Z",
+  "days": 9.451608796296297
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6018,
+  "author": "linuxlewis",
+  "created": "2026-09-21T17:23:52Z",
+  "merged": "2026-10-02T21:43:04Z",
+  "days": 11.18
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1836,
+  "author": "Jamesl28",
+  "created": "2026-10-17T00:23:29Z",
+  "merged": "2026-10-19T23:21:15Z",
+  "days": 2.9567824074074074
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1833,
+  "author": "MaGomesP",
+  "created": "2026-10-15T18:29:45Z",
+  "merged": "2026-10-19T22:43:39Z",
+  "days": 4.176319444444444
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1832,
+  "author": "MaGomesP",
+  "created": "2026-10-15T17:56:35Z",
+  "merged": "2026-10-15T18:28:46Z",
+  "days": 0.022349537037037036
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1831,
+  "author": "MaGomesP",
+  "created": "2026-10-15T16:32:41Z",
+  "merged": "2026-10-15T17:25:58Z",
+  "days": 0.037002314814814814
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1829,
+  "author": "MaGomesP",
+  "created": "2026-10-14T17:14:23Z",
+  "merged": "2026-10-14T18:10:16Z",
+  "days": 0.03880787037037037
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1828,
+  "author": "MaGomesP",
+  "created": "2026-10-14T16:34:39Z",
+  "merged": "2026-10-14T16:46:16Z",
+  "days": 0.008067129629629629
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1827,
+  "author": "MaGomesP",
+  "created": "2026-10-14T15:55:01Z",
+  "merged": "2026-10-14T16:29:32Z",
+  "days": 0.02396990740740741
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1826,
+  "author": "MaGomesP",
+  "created": "2026-10-13T19:26:11Z",
+  "merged": "2026-10-15T16:04:31Z",
+  "days": 1.8599537037037037
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1823,
+  "author": "MaGomesP",
+  "created": "2026-10-13T17:02:24Z",
+  "merged": "2026-10-16T17:16:56Z",
+  "days": 3.0100925925925925
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1822,
+  "author": "MaGomesP",
+  "created": "2026-10-13T16:25:08Z",
+  "merged": "2026-10-15T15:12:25Z",
+  "days": 1.9495023148148147
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1821,
+  "author": "MaGomesP",
+  "created": "2026-10-13T16:24:35Z",
+  "merged": "2026-10-14T14:38:58Z",
+  "days": 0.9266550925925926
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1820,
+  "author": "MaGomesP",
+  "created": "2026-10-13T15:40:47Z",
+  "merged": "2026-10-13T15:53:19Z",
+  "days": 0.008703703703703703
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1818,
+  "author": "linuxlewis",
+  "created": "2026-10-08T23:07:52Z",
+  "merged": "2026-10-20T15:25:59Z",
+  "days": 11.679247685185185
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1817,
+  "author": "MaGomesP",
+  "created": "2026-10-07T16:09:45Z",
+  "merged": "2026-10-08T16:23:54Z",
+  "days": 1.009826388888889
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1816,
+  "author": "Jamesl28",
+  "created": "2026-10-07T15:42:36Z",
+  "merged": "2026-10-07T17:54:34Z",
+  "days": 0.09164351851851851
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1815,
+  "author": "MaGomesP",
+  "created": "2026-10-07T15:32:41Z",
+  "merged": "2026-10-13T18:06:48Z",
+  "days": 6.107025462962963
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1814,
+  "author": "rafamfonseca",
+  "created": "2026-10-06T00:36:20Z",
+  "merged": "2026-10-08T14:33:10Z",
+  "days": 2.5811342592592594
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1811,
+  "author": "MaGomesP",
+  "created": "2026-10-02T17:39:43Z",
+  "merged": "2026-10-02T18:12:29Z",
+  "days": 0.022754629629629628
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1810,
+  "author": "MaGomesP",
+  "created": "2026-10-02T17:10:28Z",
+  "merged": "2026-10-07T15:05:38Z",
+  "days": 4.9133101851851855
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1808,
+  "author": "lucascamposj",
+  "created": "2026-10-01T20:02:00Z",
+  "merged": "2026-10-02T23:25:23Z",
+  "days": 1.1412384259259258
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1788,
+  "author": "MaGomesP",
+  "created": "2026-09-21T14:27:07Z",
+  "merged": "2026-10-02T16:31:49Z",
+  "days": 11.086597222222222
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1644,
+  "author": "alettieri",
+  "created": "2026-10-20T16:04:36Z",
+  "merged": "2026-10-21T00:04:07Z",
+  "days": 0.3329976851851852
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1640,
+  "author": "Jamesl28",
+  "created": "2026-10-14T01:05:46Z",
+  "merged": "2026-10-14T01:57:00Z",
+  "days": 0.0355787037037037
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1638,
+  "author": "MaGomesP",
+  "created": "2026-10-13T18:19:31Z",
+  "merged": "2026-10-13T19:08:02Z",
+  "days": 0.03369212962962963
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1637,
+  "author": "MaGomesP",
+  "created": "2026-10-13T17:27:32Z",
+  "merged": "2026-10-13T18:02:45Z",
+  "days": 0.02445601851851852
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1636,
+  "author": "lucascamposj",
+  "created": "2026-10-09T16:51:41Z",
+  "merged": "2026-10-09T18:53:43Z",
+  "days": 0.08474537037037037
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1635,
+  "author": "lucascamposj",
+  "created": "2026-10-09T15:41:55Z",
+  "merged": "2026-10-09T16:13:45Z",
+  "days": 0.02210648148148148
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1631,
+  "author": "linuxlewis",
+  "created": "2026-10-08T23:07:48Z",
+  "merged": "2026-10-08T23:19:24Z",
+  "days": 0.008055555555555555
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1630,
+  "author": "rafamfonseca",
+  "created": "2026-10-08T20:37:13Z",
+  "merged": "2026-10-08T21:06:13Z",
+  "days": 0.02013888888888889
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1628,
+  "author": "rafamfonseca",
+  "created": "2026-10-07T15:17:26Z",
+  "merged": "2026-10-07T16:40:00Z",
+  "days": 0.057337962962962966
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1627,
+  "author": "Jamesl28",
+  "created": "2026-10-06T18:37:00Z",
+  "merged": "2026-10-07T04:12:26Z",
+  "days": 0.3996064814814815
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1626,
+  "author": "Jamesl28",
+  "created": "2026-10-06T17:29:58Z",
+  "merged": "2026-10-06T18:13:37Z",
+  "days": 0.0303125
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1625,
+  "author": "lucascamposj",
+  "created": "2026-10-05T19:00:33Z",
+  "merged": "2026-10-05T21:31:31Z",
+  "days": 0.10483796296296297
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1621,
+  "author": "Jamesl28",
+  "created": "2026-10-02T15:34:49Z",
+  "merged": "2026-10-05T06:06:48Z",
+  "days": 2.6055439814814814
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1620,
+  "author": "lucascamposj",
+  "created": "2026-10-01T23:55:40Z",
+  "merged": "2026-10-02T14:30:11Z",
+  "days": 0.6073032407407407
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1619,
+  "author": "lucascamposj",
+  "created": "2026-10-01T23:55:02Z",
+  "merged": "2026-10-02T13:36:01Z",
+  "days": 0.5701273148148148
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1618,
+  "author": "Jamesl28",
+  "created": "2026-10-01T21:45:29Z",
+  "merged": "2026-10-02T04:44:06Z",
+  "days": 0.2907060185185185
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1617,
+  "author": "lucascamposj",
+  "created": "2026-10-01T20:02:05Z",
+  "merged": "2026-10-02T23:30:24Z",
+  "days": 1.1446643518518518
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1586,
+  "author": "alettieri",
+  "created": "2026-09-16T16:19:28Z",
+  "merged": "2026-10-19T18:02:18Z",
+  "days": 33.071412037037035
+ },
+ {
+  "repo": "infrastructure",
+  "n": 382,
+  "author": "linuxlewis",
+  "created": "2026-10-08T15:09:07Z",
+  "merged": "2026-10-08T16:05:29Z",
+  "days": 0.03914351851851852
+ },
+ {
+  "repo": "infrastructure",
+  "n": 381,
+  "author": "linuxlewis",
+  "created": "2026-10-05T16:44:21Z",
+  "merged": "2026-10-05T16:59:39Z",
+  "days": 0.010625
+ },
+ {
+  "repo": "infrastructure",
+  "n": 380,
+  "author": "linuxlewis",
+  "created": "2026-10-05T16:11:54Z",
+  "merged": "2026-10-05T23:17:26Z",
+  "days": 0.29550925925925925
+ }
+]
