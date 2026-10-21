@@ -16,10 +16,27 @@ Usage:
     python pr-metrics.py 4                      # last 4 cycles (8 weeks)
     python pr-metrics.py 2025-01-01 2025-06-01  # custom date range
 
-Requires: gh (GitHub CLI) authenticated with org access
+    # Build without gh: frozen history + pre-collected merged PRs
+    python pr-metrics.py 2026-01-01 2026-10-21 \\
+        --history pr-metrics-history.json --input q4_human_merged.json \\
+        --as-of "2026-10-21 ~9:31 AM CT"
+
+--input takes a JSON list of merged PRs ({author, created/createdAt/created_at,
+merged/mergedAt/merged_at}, optional repo, n/number, reviewers, is_ai_pr,
+shepherd), or an object {"merged": [...], "opened": [...]}. Metrics the input
+does not contain (opened, reviews, AI PRs) are reported as not collected.
+
+--history takes frozen per-cycle aggregates for earlier cycles; collection
+(live or --input) starts the day after the last frozen cycle.
+
+Requires: gh (GitHub CLI) authenticated with org access, unless --input is used
 """
 
+import argparse
 import json
+import math
+import os
+import shutil
 import subprocess
 import sys
 import time
@@ -37,7 +54,17 @@ REPOS = [
     "infrastructure",
 ]
 CYCLE_DAYS = 14
-QUARTERLY_PRS_PER_ENGINEER_TARGET = 110
+
+# Goals as set at the time; the PR KPI started 2026-04-17, so Q1 has none.
+QUARTERLY_PRS_PER_ENGINEER_TARGETS = {
+    "Q2 2026": 90,
+    "Q3 2026": 110,
+    "Q4 2026": 140,
+}
+TTM_P90_TARGET_HOURS = {
+    "Q4 2026": 72,
+}
+TTM_PERCENTILES = (50, 75, 90, 95)
 
 # Bot accounts to exclude from all stats
 BOTS = {
@@ -172,15 +199,8 @@ def fetch_merged_prs(repo: str, start: str, end: str) -> list[dict]:
         is_ai_pr = author in AI_AGENTS
         shepherd = approvers[0] if (is_ai_pr and approvers) else None
 
-        # Time to merge
         created_at = node.get("createdAt")
         merged_at = node.get("mergedAt")
-        ttm_hours = None
-        if created_at and merged_at:
-            created = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-            merged = datetime.fromisoformat(merged_at.replace("Z", "+00:00"))
-            ttm_hours = (merged - created).total_seconds() / 3600
-
         prs.append({
             "author": author,
             "reviewers": list(reviewers),
@@ -188,7 +208,7 @@ def fetch_merged_prs(repo: str, start: str, end: str) -> list[dict]:
             "is_ai_pr": is_ai_pr,
             "created_at": created_at,
             "merged_at": merged_at,
-            "ttm_hours": ttm_hours,
+            "ttm_hours": hours_between(created_at, merged_at),
         })
 
     return prs
@@ -211,6 +231,133 @@ def fetch_opened_prs(repo: str, start: str, end: str) -> list[dict]:
 
 def is_human(username: str) -> bool:
     return username not in BOTS and username not in EXCLUDED_USERS
+
+
+def parse_ts(value: str) -> datetime:
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def hours_between(created_at: str | None, merged_at: str | None) -> float | None:
+    if not (created_at and merged_at):
+        return None
+    return (parse_ts(merged_at) - parse_ts(created_at)).total_seconds() / 3600
+
+
+def percentile(values: list[float], pct: float) -> float | None:
+    """Linear interpolation between closest ranks (numpy's default)."""
+    if not values:
+        return None
+    ordered = sorted(values)
+    rank = (len(ordered) - 1) * pct / 100
+    lo, hi = math.floor(rank), math.ceil(rank)
+    return ordered[lo] + (ordered[hi] - ordered[lo]) * (rank - lo)
+
+
+def load_input_prs(path: str) -> dict:
+    """Load pre-collected PRs; returns merged/opened lists plus which metrics they cover."""
+    with open(path) as f:
+        data = json.load(f)
+    merged_raw = data["merged"] if isinstance(data, dict) else data
+    opened_raw = data.get("opened") if isinstance(data, dict) else None
+
+    def field(record: dict, *names: str):
+        return next((record[n] for n in names if record.get(n) is not None), None)
+
+    merged, seen = [], set()
+    for record in merged_raw:
+        number = field(record, "n", "number")
+        if number is not None:
+            key = (record.get("repo"), number)
+            if key in seen:
+                continue
+            seen.add(key)
+        created_at = field(record, "created_at", "createdAt", "created")
+        merged_at = field(record, "merged_at", "mergedAt", "merged")
+        merged.append({
+            "author": record["author"],
+            "reviewers": record.get("reviewers", []),
+            "shepherd": record.get("shepherd"),
+            "is_ai_pr": record.get("is_ai_pr", False),
+            "created_at": created_at,
+            "merged_at": merged_at,
+            "ttm_hours": hours_between(created_at, merged_at),
+        })
+    opened = None
+    if opened_raw is not None:
+        opened = [
+            {"author": r["author"], "created_at": field(r, "created_at", "createdAt", "created")}
+            for r in opened_raw
+        ]
+    return {
+        "merged": merged,
+        "opened": opened,
+        "reviews_collected": any("reviewers" in r for r in merged_raw),
+        "ai_collected": any("is_ai_pr" in r for r in merged_raw),
+    }
+
+
+def in_cycle(timestamp: str | None, cycle_start: datetime, cycle_end: datetime) -> bool:
+    return bool(timestamp) and cycle_start.date() <= parse_ts(timestamp).date() <= cycle_end.date()
+
+
+def summarize_cycle(
+    cycle_start: datetime,
+    cycle_end: datetime,
+    merged_prs: list[dict],
+    opened_prs: list[dict] | None,
+    reviews_collected: bool,
+    ai_collected: bool,
+) -> dict:
+    """Aggregate one cycle into the same shape as a frozen history cycle.
+
+    None means the metric was not collected for this cycle.
+    """
+    human_merged = [pr for pr in merged_prs if is_human(pr["author"])]
+    ai_merged = [pr for pr in merged_prs if pr.get("is_ai_pr")]
+    human_opened = [pr for pr in opened_prs if is_human(pr["author"])] if opened_prs is not None else None
+
+    authors: dict[str, dict] = defaultdict(lambda: {
+        "merged": 0,
+        "opened": 0 if human_opened is not None else None,
+        "shepherded": 0 if ai_collected else None,
+        "reviews": 0 if reviews_collected else None,
+        "ttm_avg_hours": None,
+    })
+    ttm_by_author = defaultdict(list)
+    for pr in human_merged:
+        authors[pr["author"]]["merged"] += 1
+        if pr.get("ttm_hours") is not None:
+            ttm_by_author[pr["author"]].append(pr["ttm_hours"])
+    for pr in human_opened or []:
+        authors[pr["author"]]["opened"] += 1
+    if ai_collected:
+        for pr in ai_merged:
+            if pr.get("shepherd"):
+                authors[pr["shepherd"]]["shepherded"] += 1
+    total_reviews = None
+    if reviews_collected:
+        total_reviews = 0
+        for pr in merged_prs:
+            for reviewer in pr["reviewers"]:
+                if is_human(reviewer):
+                    authors[reviewer]["reviews"] += 1
+                    total_reviews += 1
+    for author, ttms in ttm_by_author.items():
+        authors[author]["ttm_avg_hours"] = sum(ttms) / len(ttms)
+
+    ttm_values = [pr["ttm_hours"] for pr in human_merged if pr.get("ttm_hours") is not None]
+    return {
+        "start": fmt_date(cycle_start),
+        "end": fmt_date(cycle_end),
+        "opened": len(human_opened) if human_opened is not None else None,
+        "merged": len(human_merged),
+        "ai": len(ai_merged) if ai_collected else None,
+        "reviews": total_reviews,
+        "ttm_avg_hours": avg_ttm(human_merged),
+        "ttm_median_hours": median_ttm(human_merged),
+        "ttm_values": ttm_values,
+        "authors": dict(authors),
+    }
 
 
 def count_sorted(items: list[str]) -> list[tuple[str, int]]:
@@ -285,24 +432,60 @@ def median_ttm(prs: list[dict]) -> float | None:
 def main():
     today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
-    # Parse arguments
-    args = sys.argv[1:]
-    if len(args) == 1 and args[0].isdigit():
-        num_cycles = int(args[0])
+    parser = argparse.ArgumentParser(description="Mindbloom PR metrics report")
+    parser.add_argument("range", nargs="*", help="N cycles, or START END (YYYY-MM-DD)")
+    parser.add_argument("--input", help="JSON file of pre-collected PRs (skips gh)")
+    parser.add_argument("--history", help="JSON file of frozen per-cycle aggregates for earlier cycles")
+    parser.add_argument("--as-of", help='Data retrieval time, e.g. "2026-10-21 ~9:31 AM CT" (marks the cutoff day as partial)')
+    args = parser.parse_args()
+
+    if len(args.range) == 1 and args.range[0].isdigit():
+        num_cycles = int(args.range[0])
         end_date = today
         start_date = today - timedelta(days=num_cycles * CYCLE_DAYS)
-    elif len(args) == 2:
-        start_date = datetime.strptime(args[0], "%Y-%m-%d")
-        end_date = datetime.strptime(args[1], "%Y-%m-%d")
-    else:
+    elif len(args.range) == 2:
+        start_date = datetime.strptime(args.range[0], "%Y-%m-%d")
+        end_date = datetime.strptime(args.range[1], "%Y-%m-%d")
+    elif not args.range:
         end_date = today
         start_date = today - timedelta(days=CYCLE_DAYS)
+    else:
+        parser.error("expected N cycles or START END")
+    start_date = start_date.replace(tzinfo=None)
+    end_date = end_date.replace(tzinfo=None)
 
-    cycles = build_cycles(start_date, end_date)
+    history_cycles = []
+    history_quarters = {}
+    collect_start = start_date
+    if args.history:
+        with open(args.history) as f:
+            history = json.load(f)
+        history_cycles = history["cycles"]
+        history_quarters = history.get("quarters", {})
+        for cycle in history_cycles:
+            if "reviews" not in cycle:
+                cycle["reviews"] = sum(a["reviews"] for a in cycle["authors"].values())
+        if history_cycles[0]["start"] != fmt_date(start_date):
+            parser.error(f"START must be {history_cycles[0]['start']} (first frozen cycle) when --history is used")
+        collect_start = datetime.strptime(history_cycles[-1]["end"], "%Y-%m-%d") + timedelta(days=1)
+
+    input_data = load_input_prs(args.input) if args.input else None
+    opened_collected = input_data is None or input_data["opened"] is not None
+    reviews_collected = input_data is None or input_data["reviews_collected"]
+    ai_collected = input_data is None or input_data["ai_collected"]
+
+    cycles = build_cycles(collect_start, end_date)
 
     print("═" * 60)
     print(f"  Mindbloom PR Metrics")
-    print(f"  Period: {fmt_date(start_date)} → {fmt_date(end_date)} ({len(cycles)} cycles)")
+    print(f"  Period: {fmt_date(start_date)} → {fmt_date(end_date)} ({len(history_cycles) + len(cycles)} cycles)")
+    if history_cycles:
+        print(f"  Frozen history: {len(history_cycles)} cycles through {history_cycles[-1]['end']}")
+    if input_data is not None:
+        missing = [name for name, ok in (("opened", opened_collected), ("reviews", reviews_collected), ("AI PRs", ai_collected)) if not ok]
+        print(f"  Input: {args.input} ({len(input_data['merged'])} merged PRs)")
+        if missing:
+            print(f"  Not collected in input: {', '.join(missing)}")
     print("═" * 60)
 
     # Store data per cycle
@@ -318,10 +501,14 @@ def main():
 
         cycle_merged = []
         cycle_opened = []
-        for repo in REPOS:
-            s, e = fmt_date(cycle_start), fmt_date(cycle_end)
-            cycle_merged.extend(fetch_merged_prs(repo, s, e))
-            cycle_opened.extend(fetch_opened_prs(repo, s, e))
+        if input_data is not None:
+            cycle_merged = [pr for pr in input_data["merged"] if in_cycle(pr["merged_at"], cycle_start, cycle_end)]
+            cycle_opened = [pr for pr in input_data["opened"] or [] if in_cycle(pr["created_at"], cycle_start, cycle_end)]
+        else:
+            for repo in REPOS:
+                s, e = fmt_date(cycle_start), fmt_date(cycle_end)
+                cycle_merged.extend(fetch_merged_prs(repo, s, e))
+                cycle_opened.extend(fetch_opened_prs(repo, s, e))
 
         all_cycle_merged.append(cycle_merged)
         all_cycle_opened.append(cycle_opened)
@@ -335,10 +522,11 @@ def main():
         ]
 
         # Opened vs Merged
-        opened_count = len(human_opened)
+        opened_count = len(human_opened) if opened_collected else "n/a"
         merged_count = len(human_merged)
+        ai_count = len(ai_merged) if ai_collected else "n/a"
         print()
-        print(f"  Opened: {opened_count}  |  Merged: {merged_count}  |  AI PRs: {len(ai_merged)}")
+        print(f"  Opened: {opened_count}  |  Merged: {merged_count}  |  AI PRs: {ai_count}")
 
         if not human_merged and not ai_merged:
             print("  No merged PRs this cycle.")
@@ -365,24 +553,24 @@ def main():
             if unattributed:
                 print(f"    {'(no approver)' :<25} {unattributed:>3} PRs")
 
-        # PRs Opened
-        print()
-        print("  PRs Opened:")
-        for author, count in count_sorted([pr["author"] for pr in human_opened]):
-            print(f"    {author:<25} {count:>3} PRs")
+        if opened_collected:
+            print()
+            print("  PRs Opened:")
+            for author, count in count_sorted([pr["author"] for pr in human_opened]):
+                print(f"    {author:<25} {count:>3} PRs")
 
-        # Reviews
-        print()
-        print("  Reviews Given:")
-        for reviewer, count in count_sorted(human_reviewers):
-            print(f"    {reviewer:<25} {count:>3} reviews")
+        if reviews_collected:
+            print()
+            print("  Reviews Given:")
+            for reviewer, count in count_sorted(human_reviewers):
+                print(f"    {reviewer:<25} {count:>3} reviews")
 
         # Cycle time-to-merge
         ttm_avg = avg_ttm(human_merged)
         ttm_med = median_ttm(human_merged)
         unique_authors = len(set(pr["author"] for pr in human_merged))
         print()
-        print(f"  Cycle total: {merged_count} merged, {opened_count} opened, {len(ai_merged)} AI, {unique_authors} contributors")
+        print(f"  Cycle total: {merged_count} merged, {opened_count} opened, {ai_count} AI, {unique_authors} contributors")
         if ttm_avg is not None:
             print(f"  Time to merge: {fmt_duration(ttm_avg)} avg / {fmt_duration(ttm_med)} median")
 
@@ -406,7 +594,10 @@ def main():
         return
 
     print()
-    print(f"  Total opened: {len(human_opened)}  |  Total merged: {len(human_merged)}  |  AI PRs: {len(ai_merged)}")
+    print(
+        f"  Total opened: {len(human_opened) if opened_collected else 'n/a'}  |  "
+        f"Total merged: {len(human_merged)}  |  AI PRs: {len(ai_merged) if ai_collected else 'n/a'}"
+    )
 
     print()
     print("  PRs Authored — merged (total | avg/cycle | avg merge time):")
@@ -417,27 +608,30 @@ def main():
         ttm_str = fmt_duration(ttm) if ttm is not None else "n/a"
         print(f"    {author:<25} {count:>3} total   {avg:>5.1f}/cycle   merge: {ttm_str}")
 
-    print()
-    print("  AI PRs Shepherded — by approver (total | avg/cycle):")
-    shepherds_all = [pr["shepherd"] for pr in ai_merged if pr.get("shepherd")]
-    unattributed_all = sum(1 for pr in ai_merged if not pr.get("shepherd"))
-    for shepherd, count in count_sorted(shepherds_all):
-        avg = count / num_cycles
-        print(f"    {shepherd:<25} {count:>3} total   {avg:>5.1f}/cycle")
-    if unattributed_all:
-        print(f"    {'(no approver)':<25} {unattributed_all:>3} total")
+    if ai_collected:
+        print()
+        print("  AI PRs Shepherded — by approver (total | avg/cycle):")
+        shepherds_all = [pr["shepherd"] for pr in ai_merged if pr.get("shepherd")]
+        unattributed_all = sum(1 for pr in ai_merged if not pr.get("shepherd"))
+        for shepherd, count in count_sorted(shepherds_all):
+            avg = count / num_cycles
+            print(f"    {shepherd:<25} {count:>3} total   {avg:>5.1f}/cycle")
+        if unattributed_all:
+            print(f"    {'(no approver)':<25} {unattributed_all:>3} total")
 
-    print()
-    print("  PRs Opened (total | avg/cycle):")
-    for author, count in count_sorted([pr["author"] for pr in human_opened]):
-        avg = count / num_cycles
-        print(f"    {author:<25} {count:>3} total   {avg:>5.1f}/cycle")
+    if opened_collected:
+        print()
+        print("  PRs Opened (total | avg/cycle):")
+        for author, count in count_sorted([pr["author"] for pr in human_opened]):
+            avg = count / num_cycles
+            print(f"    {author:<25} {count:>3} total   {avg:>5.1f}/cycle")
 
-    print()
-    print("  Reviews Given (total | avg/cycle):")
-    for reviewer, count in count_sorted(human_reviewers):
-        avg = count / num_cycles
-        print(f"    {reviewer:<25} {count:>3} total   {avg:>5.1f}/cycle")
+    if reviews_collected:
+        print()
+        print("  Reviews Given (total | avg/cycle):")
+        for reviewer, count in count_sorted(human_reviewers):
+            avg = count / num_cycles
+            print(f"    {reviewer:<25} {count:>3} total   {avg:>5.1f}/cycle")
 
     unique = len(set(pr["author"] for pr in human_merged))
     team_avg = len(human_merged) / unique / num_cycles
@@ -465,32 +659,66 @@ def main():
             t_med = median_ttm(m)
             t_avg_s = fmt_duration(t_avg) if t_avg else "-"
             t_med_s = fmt_duration(t_med) if t_med else "-"
-            print(f"  {fmt_date(cycle_start)} → {fmt_date(cycle_end)}  {len(o):>7} {len(m):>7} {ca:>8} {t_avg_s:>8} {t_med_s:>8}")
+            o_s = len(o) if opened_collected else "n/a"
+            print(f"  {fmt_date(cycle_start)} → {fmt_date(cycle_end)}  {o_s:>7} {len(m):>7} {ca:>8} {t_avg_s:>8} {t_med_s:>8}")
+
+    if input_data is not None:
+        used = sum(len(c) for c in all_cycle_merged)
+        if used != len(input_data["merged"]):
+            print(f"  ⚠️  {len(input_data['merged']) - used} input PRs fall outside the report window and were ignored")
 
     # ── HTML Report ─────────────────────────────────────────
-    import os
-    report_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pr-metrics-report.html")
-    generate_html_report(cycles, all_cycle_merged, all_cycle_opened, start_date, end_date, report_path)
+    cycle_stats = history_cycles + [
+        summarize_cycle(
+            cs, ce, all_cycle_merged[i],
+            all_cycle_opened[i] if opened_collected else None,
+            reviews_collected, ai_collected,
+        )
+        for i, (cs, ce) in enumerate(cycles)
+    ]
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    report_path = os.path.join(script_dir, "pr-metrics-report.html")
+    generate_html_report(cycle_stats, history_quarters, start_date, end_date, report_path, args.as_of)
+    shutil.copyfile(report_path, os.path.join(script_dir, "index.html"))
+    print(f"  📄 Copied to: {os.path.join(script_dir, 'index.html')}")
 
 
 def generate_html_report(
-    cycles: list[tuple[datetime, datetime]],
-    all_cycle_merged: list[list[dict]],
-    all_cycle_opened: list[list[dict]],
+    cycle_stats: list[dict],
+    history_quarters: dict[str, dict],
     start_date: datetime,
     end_date: datetime,
     output_path: str = "pr-metrics-report.html",
+    as_of: str | None = None,
 ):
     """Generate an interactive HTML report with Chart.js visualizations."""
-    num_cycles = len(cycles)
-    cycle_labels = [f"{fmt_date(cs)}→{fmt_date(ce)}" for cs, ce in cycles]
+    num_cycles = len(cycle_stats)
+    cycle_labels = [f"{c['start']}→{c['end']}" for c in cycle_stats]
+
+    def fmt_total(values: list) -> str:
+        """Sum of collected values; '*' marks totals that miss uncollected cycles."""
+        known = [v for v in values if v is not None]
+        if not known:
+            return "n/a"
+        return f"{sum(known)}{'*' if len(known) < len(values) else ''}"
+
+    cycle_total_key = {"merged": "merged", "opened": "opened", "shepherded": "ai", "reviews": "reviews"}
+
+    def author_value(cycle: dict, author: str, key: str):
+        """Per-author count for a cycle; None when the cycle did not collect that metric."""
+        if cycle[cycle_total_key[key]] is None:
+            return None
+        return cycle["authors"].get(author, {}).get(key) or 0
+
+    def author_ttm(cycle: dict, author: str) -> float | None:
+        return cycle["authors"].get(author, {}).get("ttm_avg_hours")
 
     # Collect all human authors across all cycles
     all_authors = sorted(set(
-        pr["author"]
-        for cycle in all_cycle_merged
-        for pr in cycle
-        if is_human(pr["author"])
+        author
+        for cycle in cycle_stats
+        for author, stats in cycle["authors"].items()
+        if stats["merged"] and is_human(author)
     ))
 
     # ── Build data structures for charts ────────────────────
@@ -509,75 +737,72 @@ def generate_html_report(
     trend_ttm_avg = []
     trend_ttm_med = []
 
-    for i in range(num_cycles):
-        human_merged = [pr for pr in all_cycle_merged[i] if is_human(pr["author"])]
-        ai_merged = [pr for pr in all_cycle_merged[i] if pr.get("is_ai_pr")]
-        human_opened = [pr for pr in all_cycle_opened[i] if is_human(pr["author"])]
-
-        trend_opened.append(len(human_opened))
-        trend_merged.append(len(human_merged))
-        trend_ai.append(len(ai_merged))
-        t_avg = avg_ttm(human_merged)
-        t_med = median_ttm(human_merged)
+    for cycle in cycle_stats:
+        trend_opened.append(cycle["opened"])
+        trend_merged.append(cycle["merged"])
+        trend_ai.append(cycle["ai"])
+        t_avg = cycle["ttm_avg_hours"]
+        t_med = cycle["ttm_median_hours"]
         trend_ttm_avg.append(round(t_avg, 1) if t_avg else 0)
         trend_ttm_med.append(round(t_med, 1) if t_med else 0)
 
-        merged_counts = defaultdict(int)
-        opened_counts = defaultdict(int)
-        review_counts = defaultdict(int)
-        shepherd_counts = defaultdict(int)
-        ttm_sums = defaultdict(list)
-
-        for pr in human_merged:
-            merged_counts[pr["author"]] += 1
-            if pr.get("ttm_hours") is not None:
-                ttm_sums[pr["author"]].append(pr["ttm_hours"])
-        for pr in ai_merged:
-            if pr.get("shepherd"):
-                shepherd_counts[pr["shepherd"]] += 1
-        for pr in human_opened:
-            opened_counts[pr["author"]] += 1
-        for pr in all_cycle_merged[i]:
-            for r in pr["reviewers"]:
-                if is_human(r):
-                    review_counts[r] += 1
-
         for a in all_authors:
-            merged_by_author_cycle[a].append(merged_counts.get(a, 0))
-            opened_by_author_cycle[a].append(opened_counts.get(a, 0))
-            reviews_by_author_cycle[a].append(review_counts.get(a, 0))
-            shepherd_by_author_cycle[a].append(shepherd_counts.get(a, 0))
-            ttms = ttm_sums.get(a, [])
-            ttm_by_author_cycle[a].append(round(sum(ttms) / len(ttms), 1) if ttms else None)
+            merged_by_author_cycle[a].append(author_value(cycle, a, "merged"))
+            opened_by_author_cycle[a].append(author_value(cycle, a, "opened"))
+            reviews_by_author_cycle[a].append(author_value(cycle, a, "reviews"))
+            shepherd_by_author_cycle[a].append(author_value(cycle, a, "shepherded"))
+            ttm = author_ttm(cycle, a)
+            ttm_by_author_cycle[a].append(round(ttm, 1) if ttm is not None else None)
 
     # Overall totals for summary cards
-    all_human_merged = [pr for cycle in all_cycle_merged for pr in cycle if is_human(pr["author"])]
-    all_ai_merged = [pr for cycle in all_cycle_merged for pr in cycle if pr.get("is_ai_pr")]
-    all_human_opened = [pr for cycle in all_cycle_opened for pr in cycle if is_human(pr["author"])]
-    overall_ttm_avg = avg_ttm(all_human_merged)
-    overall_ttm_med = median_ttm(all_human_merged)
+    total_human_merged = sum(c["merged"] for c in cycle_stats)
+    total_human_opened = fmt_total([c["opened"] for c in cycle_stats])
+    total_ai_merged = fmt_total([c["ai"] for c in cycle_stats])
+    overall_ttm_avg = (
+        sum(c["ttm_avg_hours"] * c["merged"] for c in cycle_stats if c["ttm_avg_hours"] is not None)
+        / total_human_merged
+        if total_human_merged else None
+    )
+    # Median needs per-PR values, which frozen history cycles do not keep.
+    has_all_ttm_values = all("ttm_values" in c for c in cycle_stats)
+    overall_ttm_med = (
+        percentile([v for c in cycle_stats for v in c["ttm_values"]], 50) if has_all_ttm_values else None
+    )
+    not_collected = [
+        name for name, key in (("opened", "opened"), ("AI PRs", "ai"), ("reviews", "reviews"))
+        if any(c[key] is None for c in cycle_stats)
+    ]
+    uncollected_cycles = [f"{c['start']} → {c['end']}" for c in cycle_stats if c["opened"] is None or c["ai"] is None or c["reviews"] is None]
+    collection_note = ""
+    if not_collected:
+        collection_note = (
+            f"* Totals exclude {', '.join(uncollected_cycles)}: {', '.join(not_collected)} were not collected "
+            f"for these cycles (pre-collected merged-PR input). Charts leave those points empty."
+        )
+    if not has_all_ttm_values:
+        collection_note += (
+            " Median time to merge for the full window needs per-PR data that the frozen history"
+            " does not keep; see per-quarter percentiles in the Time to Merge KPI section."
+        )
 
     # ── Quarterly PRs per engineer ──────────────────────────
     def get_quarter(dt: datetime) -> str:
         q = (dt.month - 1) // 3 + 1
         return f"Q{q} {dt.year}"
 
-    quarterly_data: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
-    quarterly_authors: dict[str, set] = defaultdict(set)
+    quarter_cycle_indices: dict[str, list[int]] = defaultdict(list)
+    for i, cycle in enumerate(cycle_stats):
+        quarter_cycle_indices[get_quarter(datetime.strptime(cycle["start"], "%Y-%m-%d"))].append(i)
 
-    for i, (cs, ce) in enumerate(cycles):
-        quarter = get_quarter(cs)
-        human_merged_q = [pr for pr in all_cycle_merged[i] if is_human(pr["author"])]
-        for pr in human_merged_q:
-            quarterly_data[quarter][pr["author"]] += 1
-            quarterly_authors[quarter].add(pr["author"])
+    def merged_by_author(indices: list[int]) -> dict[str, int]:
+        counts = defaultdict(int)
+        for idx in indices:
+            for author, stats in cycle_stats[idx]["authors"].items():
+                if stats["merged"] and is_human(author):
+                    counts[author] += stats["merged"]
+        return counts
 
-    # Also count AI PRs per quarter
-    quarterly_ai: dict[str, int] = defaultdict(int)
-    for i, (cs, ce) in enumerate(cycles):
-        quarter = get_quarter(cs)
-        ai_merged_q = [pr for pr in all_cycle_merged[i] if pr.get("is_ai_pr")]
-        quarterly_ai[quarter] += len(ai_merged_q)
+    quarterly_data = {q: merged_by_author(idx) for q, idx in quarter_cycle_indices.items()}
 
     # Build quarterly PRs/engineer data
     quarter_labels = sorted(quarterly_data.keys(), key=quarter_sort_key)
@@ -586,24 +811,38 @@ def generate_html_report(
     quarterly_total_merged = []
     quarterly_total_ai = []
     quarterly_engineer_count = []
-    quarter_cycle_indices: dict[str, list[int]] = defaultdict(list)
-    for i, (cs, _ce) in enumerate(cycles):
-        quarter_cycle_indices[get_quarter(cs)].append(i)
     for q in quarter_labels:
         total = sum(quarterly_data[q].values())
-        eng_count = len(quarterly_authors[q])
+        eng_count = len(quarterly_data[q])
+        ai_values = [cycle_stats[i]["ai"] for i in quarter_cycle_indices[q] if cycle_stats[i]["ai"] is not None]
         quarterly_total_merged.append(total)
-        quarterly_total_ai.append(quarterly_ai.get(q, 0))
+        quarterly_total_ai.append(sum(ai_values) if ai_values else None)
         quarterly_engineer_count.append(eng_count)
         quarterly_prs_per_eng.append(round(total / eng_count, 1) if eng_count else 0)
         quarterly_prs_per_eng_projection.append(None)
+
+    # ── Time to merge percentiles per quarter ───────────────
+    quarterly_ttm: dict[str, dict] = {}
+    for q in quarter_labels:
+        quarter_cycles = [cycle_stats[i] for i in quarter_cycle_indices[q]]
+        if all("ttm_values" in c for c in quarter_cycles):
+            values = [v for c in quarter_cycles for v in c["ttm_values"]]
+            quarterly_ttm[q] = {"source": "computed"}
+            for p in TTM_PERCENTILES:
+                quarterly_ttm[q][p] = percentile(values, p)
+        else:
+            frozen = history_quarters.get(q, {})
+            quarterly_ttm[q] = {"source": "frozen" if frozen else None, "note": frozen.get("ttm_note")}
+            for p in TTM_PERCENTILES:
+                quarterly_ttm[q][p] = frozen.get(f"ttm_p{p}_hours")
 
     current_quarter_label = get_quarter(end_date)
     current_quarter_start, current_quarter_end = quarter_bounds(end_date)
     current_quarter_total_days = (current_quarter_end - current_quarter_start).days + 1
     current_quarter_elapsed_days = max(1, min((end_date - current_quarter_start).days + 1, current_quarter_total_days))
-    current_quarter_total_merged = sum(quarterly_data[current_quarter_label].values())
-    current_quarter_engineer_count = len(quarterly_authors[current_quarter_label])
+    current_quarter_target = QUARTERLY_PRS_PER_ENGINEER_TARGETS.get(current_quarter_label)
+    current_quarter_total_merged = sum(quarterly_data.get(current_quarter_label, {}).values())
+    current_quarter_engineer_count = len(quarterly_data.get(current_quarter_label, {}))
     current_quarter_prs_per_eng = (
         round(current_quarter_total_merged / current_quarter_engineer_count, 1)
         if current_quarter_engineer_count else 0
@@ -613,37 +852,112 @@ def generate_html_report(
         if current_quarter_engineer_count else 0
     )
     current_quarter_days_remaining = max(current_quarter_total_days - current_quarter_elapsed_days, 0)
-    current_quarter_target_total_prs = QUARTERLY_PRS_PER_ENGINEER_TARGET * current_quarter_engineer_count
-    current_quarter_prs_needed = max(current_quarter_target_total_prs - current_quarter_total_merged, 0)
-    current_quarter_required_daily_prs = (
-        round(current_quarter_prs_needed / current_quarter_days_remaining, 1)
-        if current_quarter_days_remaining else 0
-    )
     current_quarter_progress_pct = round(current_quarter_elapsed_days / current_quarter_total_days * 100, 1)
-    current_quarter_on_track = current_quarter_projected_prs_per_eng >= QUARTERLY_PRS_PER_ENGINEER_TARGET
-    current_quarter_status = "On track" if current_quarter_on_track else "Off track"
-    current_quarter_status_class = "kpi-on-track" if current_quarter_on_track else "kpi-off-track"
-    current_quarter_gap = round(
-        current_quarter_projected_prs_per_eng - QUARTERLY_PRS_PER_ENGINEER_TARGET,
-        1,
-    )
-    current_quarter_summary = (
-        f"At the current pace, {current_quarter_label} is projected to finish at "
-        f"{current_quarter_projected_prs_per_eng:.1f} PRs per engineer, "
-        f"{abs(current_quarter_gap):.1f} {'above' if current_quarter_on_track else 'below'} "
-        f"the {QUARTERLY_PRS_PER_ENGINEER_TARGET} PR/engineer KPI."
-    )
-    if not current_quarter_on_track and current_quarter_days_remaining:
-        current_quarter_summary += (
-            f" Need {current_quarter_prs_needed} more merged PRs across the team, "
-            f"or about {current_quarter_required_daily_prs:.1f}/day for the rest of the quarter."
+    current_quarter_partial = end_date < current_quarter_end
+    current_quarter_heading = f"{current_quarter_label}{' to date (partial quarter)' if current_quarter_partial else ''}"
+    data_through = f"Data through {fmt_date(end_date)}"
+    if as_of:
+        data_through += f", retrieved {as_of}; the cutoff day is partial"
+    if current_quarter_target is None:
+        current_quarter_status = "No target"
+        current_quarter_status_class = ""
+        current_quarter_summary = (
+            f"At the current pace, {current_quarter_label} is projected to finish at "
+            f"{current_quarter_projected_prs_per_eng:.1f} PRs per engineer. No KPI target is set for this quarter."
         )
+        current_quarter_target_text = f"No KPI target set for {current_quarter_label}"
+    else:
+        current_quarter_target_total_prs = current_quarter_target * current_quarter_engineer_count
+        current_quarter_prs_needed = max(current_quarter_target_total_prs - current_quarter_total_merged, 0)
+        current_quarter_required_daily_prs = (
+            round(current_quarter_prs_needed / current_quarter_days_remaining, 1)
+            if current_quarter_days_remaining else 0
+        )
+        current_quarter_on_track = current_quarter_projected_prs_per_eng >= current_quarter_target
+        current_quarter_status = "On track" if current_quarter_on_track else "Off track"
+        current_quarter_status_class = "kpi-on-track" if current_quarter_on_track else "kpi-off-track"
+        current_quarter_gap = round(current_quarter_projected_prs_per_eng - current_quarter_target, 1)
+        current_quarter_summary = (
+            f"At the current pace, {current_quarter_label} is projected to finish at "
+            f"{current_quarter_projected_prs_per_eng:.1f} PRs per engineer, "
+            f"{abs(current_quarter_gap):.1f} {'above' if current_quarter_on_track else 'below'} "
+            f"the {current_quarter_target} PR/engineer KPI."
+        )
+        if not current_quarter_on_track and current_quarter_days_remaining:
+            current_quarter_summary += (
+                f" Need {current_quarter_prs_needed} more merged PRs across the team, "
+                f"or about {current_quarter_required_daily_prs:.1f}/day for the rest of the quarter."
+            )
+        current_quarter_target_text = f"KPI target: {current_quarter_target} PRs per engineer for {current_quarter_label}"
 
     if current_quarter_label in quarter_labels:
         current_quarter_index = quarter_labels.index(current_quarter_label)
         quarterly_prs_per_eng_projection[current_quarter_index] = current_quarter_projected_prs_per_eng
 
-    quarterly_target_line = [QUARTERLY_PRS_PER_ENGINEER_TARGET for _ in quarter_labels]
+    quarterly_target_line = [QUARTERLY_PRS_PER_ENGINEER_TARGETS.get(q) for q in quarter_labels]
+
+    # ── Time to merge KPI (current quarter) ─────────────────
+    def fmt_ttm(hours: float | None) -> str:
+        return fmt_duration(hours) if hours is not None else "n/a"
+
+    def fmt_ttm_detail(hours: float | None) -> str:
+        if hours is None or hours < 24:
+            return fmt_ttm(hours)
+        return f"{fmt_duration(hours)} ({hours:.1f}h)"
+
+    def ttm_card_label(name: str, hours: float | None) -> str:
+        return f"{name} Time to Merge{f' · {hours:.1f}h' if hours is not None and hours >= 24 else ''}"
+
+    def fmt_goal_days(hours: float) -> str:
+        return f"{hours / 24:g} days"
+
+    current_ttm = quarterly_ttm.get(current_quarter_label, {p: None for p in TTM_PERCENTILES})
+    current_ttm_target = TTM_P90_TARGET_HOURS.get(current_quarter_label)
+    current_p90 = current_ttm[90]
+    if current_ttm_target is None or current_p90 is None:
+        ttm_status, ttm_status_class = "No target", ""
+    elif current_p90 <= current_ttm_target:
+        ttm_status, ttm_status_class = "On track", "kpi-on-track"
+    else:
+        ttm_status, ttm_status_class = "Off track", "kpi-off-track"
+    ttm_summary = f"P90 time to merge is {fmt_ttm_detail(current_p90)}"
+    if current_p90 is not None:
+        if current_ttm_target is not None:
+            gap = current_p90 - current_ttm_target
+            ttm_summary += f", {fmt_duration(abs(gap))} {'within' if gap <= 0 else 'above'} the {current_ttm_target / 24:g}-day goal"
+    ttm_summary += "."
+    previous_quarters = [q for q in quarter_labels if quarter_sort_key(q) < quarter_sort_key(current_quarter_label) and quarterly_ttm[q][90] is not None]
+    if previous_quarters:
+        prev = previous_quarters[-1]
+        ttm_summary += f" {prev} baseline: P90 {fmt_ttm(quarterly_ttm[prev][90])}, P50 {fmt_ttm(quarterly_ttm[prev][50])}."
+
+    ttm_rows = ""
+    for q in quarter_labels:
+        stats = quarterly_ttm[q]
+        goal = TTM_P90_TARGET_HOURS.get(q)
+        if goal is None or stats[90] is None:
+            row_status = "Baseline" if stats[90] is not None else "Not measured"
+            status_html = row_status
+        else:
+            ok = stats[90] <= goal
+            status_html = f'<span class="kpi-status {"kpi-on-track" if ok else "kpi-off-track"}">{"On track" if ok else "Off track"}</span>'
+        partial = " (to date)" if q == current_quarter_label and current_quarter_partial else ""
+        ttm_rows += f"""      <tr>
+        <td>{q}{partial}</td>
+        <td class="num">{sum(quarterly_data[q].values())}</td>
+        <td class="num">{fmt_ttm_detail(stats[50])}</td>
+        <td class="num">{fmt_ttm_detail(stats[75])}</td>
+        <td class="num"><strong>{fmt_ttm_detail(stats[90])}</strong></td>
+        <td class="num">{fmt_ttm_detail(stats[95])}</td>
+        <td class="num">{f"≤ {fmt_goal_days(goal)}" if goal is not None else "—"}</td>
+        <td class="num">{status_html}</td>
+      </tr>\n"""
+    ttm_notes = " ".join(
+        f"{q}: {quarterly_ttm[q]['note']}" for q in quarter_labels if quarterly_ttm[q].get("note")
+    )
+    unmeasured = [q for q in quarter_labels if quarterly_ttm[q]["source"] is None]
+    if unmeasured:
+        ttm_notes += f" {', '.join(unmeasured)}: percentiles were not recorded and the frozen history has no per-PR data."
 
     # Colors for each author
     palette = [
@@ -666,34 +980,14 @@ def generate_html_report(
             })
         return json.dumps(datasets)
 
-    def summarize_authors(
-        merged_prs: list[dict],
-        ai_prs: list[dict],
-        opened_prs: list[dict],
-        review_source_prs: list[dict],
-        cycle_count: int,
-    ) -> list[dict]:
-        """Build per-author summary rows for a reporting window."""
-        merged_counts = defaultdict(int)
-        opened_counts = defaultdict(int)
-        review_counts = defaultdict(int)
-        shepherd_counts = defaultdict(int)
-        ttm_by_author = defaultdict(list)
+    def summarize_authors(indices: list[int], frozen_avg_merge_time: dict[str, str] | None = None) -> list[dict]:
+        """Build per-author summary rows for a set of cycles.
 
-        for pr in merged_prs:
-            merged_counts[pr["author"]] += 1
-            if pr.get("ttm_hours") is not None:
-                ttm_by_author[pr["author"]].append(pr["ttm_hours"])
-        for pr in ai_prs:
-            if pr.get("shepherd"):
-                shepherd_counts[pr["shepherd"]] += 1
-        for pr in opened_prs:
-            opened_counts[pr["author"]] += 1
-        for pr in review_source_prs:
-            for reviewer in pr["reviewers"]:
-                if is_human(reviewer):
-                    review_counts[reviewer] += 1
-
+        frozen_avg_merge_time keeps closed-quarter values exact, since frozen
+        per-cycle averages are rounded to 0.1h.
+        """
+        cycles_in_window = [cycle_stats[i] for i in indices]
+        merged_counts = merged_by_author(indices)
         authors = sorted(
             merged_counts.keys(),
             key=lambda author: (-merged_counts.get(author, 0), author.lower()),
@@ -701,15 +995,21 @@ def generate_html_report(
 
         rows = []
         for author in authors:
-            ttms = ttm_by_author.get(author, [])
+            ttm_hours = ttm_count = 0
+            for cycle in cycles_in_window:
+                stats = cycle["authors"].get(author)
+                if stats and stats["merged"] and stats["ttm_avg_hours"] is not None:
+                    ttm_hours += stats["ttm_avg_hours"] * stats["merged"]
+                    ttm_count += stats["merged"]
             rows.append({
                 "author": author,
-                "opened": opened_counts.get(author, 0),
-                "merged": merged_counts.get(author, 0),
-                "shepherded": shepherd_counts.get(author, 0),
-                "reviews": review_counts.get(author, 0),
-                "avg_merge_time": fmt_duration(sum(ttms) / len(ttms)) if ttms else "n/a",
-                "merged_per_cycle": merged_counts.get(author, 0) / cycle_count if cycle_count else 0,
+                "opened": fmt_total([author_value(c, author, "opened") for c in cycles_in_window]),
+                "merged": merged_counts[author],
+                "shepherded": fmt_total([author_value(c, author, "shepherded") for c in cycles_in_window]),
+                "reviews": fmt_total([author_value(c, author, "reviews") for c in cycles_in_window]),
+                "avg_merge_time": (frozen_avg_merge_time or {}).get(author)
+                or (fmt_duration(ttm_hours / ttm_count) if ttm_count else "n/a"),
+                "merged_per_cycle": merged_counts[author] / len(indices) if indices else 0,
             })
         return rows
 
@@ -748,36 +1048,25 @@ def generate_html_report(
 """
         return html_table
 
-    overall_summary_rows = summarize_authors(
-        all_human_merged,
-        all_ai_merged,
-        all_human_opened,
-        [pr for cycle in all_cycle_merged for pr in cycle],
-        num_cycles,
-    )
+    overall_summary_rows = summarize_authors(list(range(num_cycles)))
 
     quarterly_summary_sections = []
     for quarter in quarter_labels:
         cycle_indices = quarter_cycle_indices[quarter]
-        quarter_all_merged = [pr for idx in cycle_indices for pr in all_cycle_merged[idx]]
-        quarter_human_merged = [pr for pr in quarter_all_merged if is_human(pr["author"])]
-        quarter_ai_merged = [pr for pr in quarter_all_merged if pr.get("is_ai_pr")]
-        quarter_human_opened = [
-            pr for idx in cycle_indices for pr in all_cycle_opened[idx] if is_human(pr["author"])
-        ]
+        quarter_cycles = [cycle_stats[i] for i in cycle_indices]
+        frozen_quarter = not any("ttm_values" in c for c in quarter_cycles)
         summary_rows = summarize_authors(
-            quarter_human_merged,
-            quarter_ai_merged,
-            quarter_human_opened,
-            quarter_all_merged,
-            len(cycle_indices),
+            cycle_indices,
+            history_quarters.get(quarter, {}).get("author_avg_merge_time") if frozen_quarter else None,
         )
         subtitle = (
-            f"{len(quarter_human_opened)} opened · "
-            f"{len(quarter_human_merged)} merged · "
-            f"{len(quarter_ai_merged)} AI PRs · "
-            f"{len(set(pr['author'] for pr in quarter_human_merged))} contributors"
+            f"{fmt_total([c['opened'] for c in quarter_cycles])} opened · "
+            f"{sum(quarterly_data[quarter].values())} merged · "
+            f"{fmt_total([c['ai'] for c in quarter_cycles])} AI PRs · "
+            f"{len(quarterly_data[quarter])} contributors"
         )
+        if quarter == current_quarter_label and current_quarter_partial:
+            subtitle += f" · partial quarter through {fmt_date(end_date)}"
         quarterly_summary_sections.append(render_summary_table(quarter, summary_rows, subtitle))
 
     html = f"""<!DOCTYPE html>
@@ -816,6 +1105,8 @@ def generate_html_report(
   .kpi-status {{ display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }}
   .kpi-on-track {{ color: #3fb950; background: rgba(63, 185, 80, 0.14); }}
   .kpi-off-track {{ color: #ff7b72; background: rgba(255, 123, 114, 0.14); }}
+  .footnote {{ color: #8b949e; font-size: 0.85rem; line-height: 1.5; margin: -16px 0 32px; }}
+  .kpi-box .footnote {{ margin: 12px 0 0; }}
 </style>
 </head>
 <body>
@@ -824,14 +1115,15 @@ def generate_html_report(
 <p class="subtitle">{fmt_date(start_date)} → {fmt_date(end_date)} · {num_cycles} cycle{"s" if num_cycles != 1 else ""} · {len(all_authors)} contributors</p>
 
 <div class="cards">
-  <div class="card"><div class="value">{len(all_human_opened)}</div><div class="label">PRs Opened</div></div>
-  <div class="card"><div class="value">{len(all_human_merged)}</div><div class="label">PRs Merged (Human)</div></div>
-  <div class="card"><div class="value">{len(all_ai_merged)}</div><div class="label">AI PRs Merged</div></div>
+  <div class="card"><div class="value">{total_human_opened}</div><div class="label">PRs Opened</div></div>
+  <div class="card"><div class="value">{total_human_merged}</div><div class="label">PRs Merged (Human)</div></div>
+  <div class="card"><div class="value">{total_ai_merged}</div><div class="label">AI PRs Merged</div></div>
   <div class="card"><div class="value">{len(all_authors)}</div><div class="label">Contributors</div></div>
   <div class="card"><div class="value">{fmt_duration(overall_ttm_avg) if overall_ttm_avg else 'n/a'}</div><div class="label">Avg Time to Merge</div></div>
-  <div class="card"><div class="value">{fmt_duration(overall_ttm_med) if overall_ttm_med else 'n/a'}</div><div class="label">Median Time to Merge</div></div>
-  <div class="card"><div class="value">{len(all_human_merged) / len(all_authors) / num_cycles:.1f}</div><div class="label">Avg PRs/Person/Cycle</div></div>
+  <div class="card"><div class="value">{fmt_duration(overall_ttm_med) if overall_ttm_med else ('n/a*' if not has_all_ttm_values else 'n/a')}</div><div class="label">Median Time to Merge</div></div>
+  <div class="card"><div class="value">{total_human_merged / len(all_authors) / num_cycles:.1f}</div><div class="label">Avg PRs/Person/Cycle</div></div>
 </div>
+{f'<p class="footnote">{collection_note.strip()}</p>' if collection_note else ''}
 
 <div class="chart-grid">
   <div class="chart-box">
@@ -865,8 +1157,8 @@ def generate_html_report(
 </div>
 
 <div class="chart-box kpi-box">
-  <h2>{current_quarter_label} KPI Pace</h2>
-  <p class="section-subtitle">KPI target: {QUARTERLY_PRS_PER_ENGINEER_TARGET} PRs per engineer for {current_quarter_label} ({fmt_date(current_quarter_start)} → {fmt_date(current_quarter_end)}).</p>
+  <h2>{current_quarter_heading} KPI Pace</h2>
+  <p class="section-subtitle">{current_quarter_target_text} ({fmt_date(current_quarter_start)} → {fmt_date(current_quarter_end)}). {data_through}. PRs/engineer = human merged PRs ÷ engineers with at least one merged PR this quarter; bots, Devin, and {", ".join(sorted(EXCLUDED_USERS))} are excluded. Projection is straight-line from days elapsed.</p>
   <div class="cards kpi-grid">
     <div class="card"><div class="value">{current_quarter_prs_per_eng:.1f}</div><div class="label">Actual PRs/Engineer</div></div>
     <div class="card"><div class="value">{current_quarter_projected_prs_per_eng:.1f}</div><div class="label">Projected PRs/Engineer</div></div>
@@ -876,6 +1168,36 @@ def generate_html_report(
     <div class="card"><div class="value"><span class="kpi-status {current_quarter_status_class}">{current_quarter_status}</span></div><div class="label">KPI Status</div></div>
   </div>
   <p class="kpi-summary"><strong>{current_quarter_label} outlook:</strong> {current_quarter_summary}</p>
+</div>
+
+<div class="chart-box kpi-box">
+  <h2>{current_quarter_heading} Time to Merge KPI</h2>
+  <p class="section-subtitle">Headline: P90 time from PR created to merged for human merged PRs{f"; goal P90 ≤ {fmt_goal_days(current_ttm_target)}" if current_ttm_target is not None else ""}. P50 is context. Percentiles use linear interpolation. {data_through}.</p>
+  <div class="cards kpi-grid">
+    <div class="card"><div class="value">{fmt_ttm(current_ttm[90])}</div><div class="label">{ttm_card_label("P90", current_ttm[90])}</div></div>
+    <div class="card"><div class="value">{fmt_ttm(current_ttm[50])}</div><div class="label">{ttm_card_label("P50", current_ttm[50])}</div></div>
+    <div class="card"><div class="value">{fmt_ttm(current_ttm[75])}</div><div class="label">{ttm_card_label("P75", current_ttm[75])}</div></div>
+    <div class="card"><div class="value">{fmt_ttm(current_ttm[95])}</div><div class="label">{ttm_card_label("P95", current_ttm[95])}</div></div>
+    <div class="card"><div class="value"><span class="kpi-status {ttm_status_class}">{ttm_status}</span></div><div class="label">P90 KPI Status</div></div>
+  </div>
+  <p class="kpi-summary"><strong>{current_quarter_label} time to merge:</strong> {ttm_summary}</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Quarter</th>
+        <th class="num">Merged PRs</th>
+        <th class="num">P50</th>
+        <th class="num">P75</th>
+        <th class="num">P90</th>
+        <th class="num">P95</th>
+        <th class="num">P90 Goal</th>
+        <th class="num">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+{ttm_rows}    </tbody>
+  </table>
+  {f'<p class="footnote">{ttm_notes.strip()}</p>' if ttm_notes.strip() else ''}
 </div>
 
 <div class="chart-grid">

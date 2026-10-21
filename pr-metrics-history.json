@@ -1,0 +1,1104 @@
+{
+ "source": "Frozen aggregates from pr-metrics-report.html at commit e690c52 (Q3 2026 closeout, 2026-01-01 to 2026-09-30). Raw PR data for these cycles is not stored. Per-cycle per-author average time to merge is rounded to 0.1h; quarters.author_avg_merge_time keeps the exact closed-quarter table values.",
+ "quarters": {
+  "Q3 2026": {
+   "ttm_p50_hours": 5.7,
+   "ttm_p90_hours": 110.4,
+   "ttm_note": "Q3 baseline as reported (P90 4.6d, P50 5.7h); P75/P95 not recorded.",
+   "author_avg_merge_time": {
+    "alettieri": "12.1h",
+    "MaGomesP": "1.6d",
+    "linuxlewis": "1.3d",
+    "lucascamposj": "2.2d",
+    "Jamesl28": "1.9d",
+    "rafamfonseca": "1.9d"
+   }
+  },
+  "Q1 2026": {
+   "author_avg_merge_time": {
+    "MaGomesP": "1.5d",
+    "linuxlewis": "1.5d",
+    "rafamfonseca": "2.1d",
+    "samiruppaluru": "1.7d",
+    "lucascamposj": "1.4d",
+    "Jamesl28": "2.4d",
+    "jordanmoritz": "13.5h"
+   }
+  },
+  "Q2 2026": {
+   "author_avg_merge_time": {
+    "linuxlewis": "1.1d",
+    "MaGomesP": "2.4d",
+    "lucascamposj": "2.6d",
+    "Jamesl28": "3.8d",
+    "rafamfonseca": "2.5d"
+   }
+  }
+ },
+ "cycles": [
+  {
+   "start": "2026-01-01",
+   "end": "2026-01-14",
+   "opened": 90,
+   "merged": 70,
+   "ai": 18,
+   "ttm_avg_hours": 33.4,
+   "ttm_median_hours": 18.5,
+   "authors": {
+    "MaGomesP": {
+     "merged": 20,
+     "opened": 27,
+     "shepherded": 1,
+     "reviews": 14,
+     "ttm_avg_hours": 16.1
+    },
+    "linuxlewis": {
+     "merged": 22,
+     "opened": 32,
+     "shepherded": 8,
+     "reviews": 20,
+     "ttm_avg_hours": 25.0
+    },
+    "lucascamposj": {
+     "merged": 14,
+     "opened": 14,
+     "shepherded": 0,
+     "reviews": 19,
+     "ttm_avg_hours": 55.0
+    },
+    "rafamfonseca": {
+     "merged": 9,
+     "opened": 10,
+     "shepherded": 5,
+     "reviews": 21,
+     "ttm_avg_hours": 27.7
+    },
+    "samiruppaluru": {
+     "merged": 5,
+     "opened": 7,
+     "shepherded": 4,
+     "reviews": 10,
+     "ttm_avg_hours": 89.8
+    }
+   }
+  },
+  {
+   "start": "2026-01-15",
+   "end": "2026-01-28",
+   "opened": 100,
+   "merged": 96,
+   "ai": 21,
+   "ttm_avg_hours": 44.4,
+   "ttm_median_hours": 17.8,
+   "authors": {
+    "MaGomesP": {
+     "merged": 24,
+     "opened": 27,
+     "shepherded": 0,
+     "reviews": 11,
+     "ttm_avg_hours": 57.0
+    },
+    "linuxlewis": {
+     "merged": 31,
+     "opened": 30,
+     "shepherded": 5,
+     "reviews": 27,
+     "ttm_avg_hours": 39.4
+    },
+    "lucascamposj": {
+     "merged": 9,
+     "opened": 12,
+     "shepherded": 0,
+     "reviews": 22,
+     "ttm_avg_hours": 10.4
+    },
+    "rafamfonseca": {
+     "merged": 9,
+     "opened": 11,
+     "shepherded": 11,
+     "reviews": 33,
+     "ttm_avg_hours": 55.8
+    },
+    "samiruppaluru": {
+     "merged": 23,
+     "opened": 20,
+     "shepherded": 3,
+     "reviews": 14,
+     "ttm_avg_hours": 47.0
+    }
+   }
+  },
+  {
+   "start": "2026-01-29",
+   "end": "2026-02-11",
+   "opened": 99,
+   "merged": 90,
+   "ai": 31,
+   "ttm_avg_hours": 38.1,
+   "ttm_median_hours": 13.7,
+   "authors": {
+    "Jamesl28": {
+     "merged": 1,
+     "opened": 1,
+     "shepherded": 0,
+     "reviews": 4,
+     "ttm_avg_hours": 108.1
+    },
+    "MaGomesP": {
+     "merged": 35,
+     "opened": 34,
+     "shepherded": 2,
+     "reviews": 16,
+     "ttm_avg_hours": 36.7
+    },
+    "linuxlewis": {
+     "merged": 14,
+     "opened": 21,
+     "shepherded": 11,
+     "reviews": 32,
+     "ttm_avg_hours": 55.7
+    },
+    "lucascamposj": {
+     "merged": 9,
+     "opened": 8,
+     "shepherded": 1,
+     "reviews": 34,
+     "ttm_avg_hours": 24.1
+    },
+    "rafamfonseca": {
+     "merged": 23,
+     "opened": 24,
+     "shepherded": 12,
+     "reviews": 21,
+     "ttm_avg_hours": 31.0
+    },
+    "samiruppaluru": {
+     "merged": 8,
+     "opened": 11,
+     "shepherded": 3,
+     "reviews": 9,
+     "ttm_avg_hours": 40.4
+    }
+   }
+  },
+  {
+   "start": "2026-02-12",
+   "end": "2026-02-25",
+   "opened": 104,
+   "merged": 98,
+   "ai": 36,
+   "ttm_avg_hours": 47.1,
+   "ttm_median_hours": 18.0,
+   "authors": {
+    "Jamesl28": {
+     "merged": 3,
+     "opened": 7,
+     "shepherded": 2,
+     "reviews": 10,
+     "ttm_avg_hours": 127.4
+    },
+    "MaGomesP": {
+     "merged": 27,
+     "opened": 29,
+     "shepherded": 2,
+     "reviews": 12,
+     "ttm_avg_hours": 22.6
+    },
+    "linuxlewis": {
+     "merged": 40,
+     "opened": 41,
+     "shepherded": 18,
+     "reviews": 51,
+     "ttm_avg_hours": 48.4
+    },
+    "lucascamposj": {
+     "merged": 2,
+     "opened": 3,
+     "shepherded": 0,
+     "reviews": 4,
+     "ttm_avg_hours": 32.5
+    },
+    "rafamfonseca": {
+     "merged": 8,
+     "opened": 8,
+     "shepherded": 11,
+     "reviews": 35,
+     "ttm_avg_hours": 121.1
+    },
+    "samiruppaluru": {
+     "merged": 18,
+     "opened": 16,
+     "shepherded": 2,
+     "reviews": 21,
+     "ttm_avg_hours": 36.4
+    }
+   }
+  },
+  {
+   "start": "2026-02-26",
+   "end": "2026-03-11",
+   "opened": 100,
+   "merged": 98,
+   "ai": 33,
+   "ttm_avg_hours": 39.1,
+   "ttm_median_hours": 16.0,
+   "authors": {
+    "Jamesl28": {
+     "merged": 11,
+     "opened": 10,
+     "shepherded": 3,
+     "reviews": 17,
+     "ttm_avg_hours": 68.3
+    },
+    "MaGomesP": {
+     "merged": 40,
+     "opened": 43,
+     "shepherded": 4,
+     "reviews": 28,
+     "ttm_avg_hours": 33.2
+    },
+    "linuxlewis": {
+     "merged": 23,
+     "opened": 22,
+     "shepherded": 14,
+     "reviews": 58,
+     "ttm_avg_hours": 24.8
+    },
+    "lucascamposj": {
+     "merged": 9,
+     "opened": 12,
+     "shepherded": 0,
+     "reviews": 16,
+     "ttm_avg_hours": 38.5
+    },
+    "rafamfonseca": {
+     "merged": 6,
+     "opened": 4,
+     "shepherded": 8,
+     "reviews": 24,
+     "ttm_avg_hours": 119.1
+    },
+    "samiruppaluru": {
+     "merged": 9,
+     "opened": 9,
+     "shepherded": 3,
+     "reviews": 9,
+     "ttm_avg_hours": 13.3
+    }
+   }
+  },
+  {
+   "start": "2026-03-12",
+   "end": "2026-03-25",
+   "opened": 89,
+   "merged": 73,
+   "ai": 43,
+   "ttm_avg_hours": 42.0,
+   "ttm_median_hours": 13.3,
+   "authors": {
+    "Jamesl28": {
+     "merged": 18,
+     "opened": 21,
+     "shepherded": 3,
+     "reviews": 18,
+     "ttm_avg_hours": 49.3
+    },
+    "MaGomesP": {
+     "merged": 21,
+     "opened": 21,
+     "shepherded": 3,
+     "reviews": 22,
+     "ttm_avg_hours": 51.9
+    },
+    "jordanmoritz": {
+     "merged": 0,
+     "opened": 2,
+     "shepherded": 0,
+     "reviews": 0,
+     "ttm_avg_hours": null
+    },
+    "linuxlewis": {
+     "merged": 12,
+     "opened": 20,
+     "shepherded": 16,
+     "reviews": 43,
+     "ttm_avg_hours": 17.9
+    },
+    "lucascamposj": {
+     "merged": 14,
+     "opened": 16,
+     "shepherded": 0,
+     "reviews": 11,
+     "ttm_avg_hours": 37.5
+    },
+    "rafamfonseca": {
+     "merged": 4,
+     "opened": 6,
+     "shepherded": 20,
+     "reviews": 43,
+     "ttm_avg_hours": 43.9
+    },
+    "samiruppaluru": {
+     "merged": 4,
+     "opened": 3,
+     "shepherded": 1,
+     "reviews": 7,
+     "ttm_avg_hours": 43.0
+    }
+   }
+  },
+  {
+   "start": "2026-03-26",
+   "end": "2026-03-31",
+   "opened": 38,
+   "merged": 32,
+   "ai": 12,
+   "ttm_avg_hours": 18.4,
+   "ttm_median_hours": 2.3,
+   "authors": {
+    "Jamesl28": {
+     "merged": 8,
+     "opened": 6,
+     "shepherded": 2,
+     "reviews": 7,
+     "ttm_avg_hours": 35.1
+    },
+    "MaGomesP": {
+     "merged": 6,
+     "opened": 8,
+     "shepherded": 0,
+     "reviews": 4,
+     "ttm_avg_hours": 5.1
+    },
+    "jordanmoritz": {
+     "merged": 1,
+     "opened": 1,
+     "shepherded": 0,
+     "reviews": 0,
+     "ttm_avg_hours": 13.5
+    },
+    "linuxlewis": {
+     "merged": 4,
+     "opened": 6,
+     "shepherded": 7,
+     "reviews": 20,
+     "ttm_avg_hours": 36.9
+    },
+    "lucascamposj": {
+     "merged": 5,
+     "opened": 6,
+     "shepherded": 0,
+     "reviews": 4,
+     "ttm_avg_hours": 21.5
+    },
+    "rafamfonseca": {
+     "merged": 8,
+     "opened": 11,
+     "shepherded": 2,
+     "reviews": 8,
+     "ttm_avg_hours": 1.0
+    }
+   }
+  },
+  {
+   "start": "2026-04-01",
+   "end": "2026-04-14",
+   "opened": 85,
+   "merged": 68,
+   "ai": 39,
+   "ttm_avg_hours": 34.7,
+   "ttm_median_hours": 8.7,
+   "authors": {
+    "Jamesl28": {
+     "merged": 16,
+     "opened": 23,
+     "shepherded": 0,
+     "reviews": 13,
+     "ttm_avg_hours": 24.8
+    },
+    "MaGomesP": {
+     "merged": 14,
+     "opened": 20,
+     "shepherded": 5,
+     "reviews": 16,
+     "ttm_avg_hours": 63.3
+    },
+    "linuxlewis": {
+     "merged": 26,
+     "opened": 27,
+     "shepherded": 17,
+     "reviews": 39,
+     "ttm_avg_hours": 11.0
+    },
+    "lucascamposj": {
+     "merged": 9,
+     "opened": 12,
+     "shepherded": 0,
+     "reviews": 7,
+     "ttm_avg_hours": 70.7
+    },
+    "rafamfonseca": {
+     "merged": 3,
+     "opened": 3,
+     "shepherded": 7,
+     "reviews": 22,
+     "ttm_avg_hours": 51.4
+    }
+   }
+  },
+  {
+   "start": "2026-04-15",
+   "end": "2026-04-28",
+   "opened": 58,
+   "merged": 62,
+   "ai": 31,
+   "ttm_avg_hours": 44.7,
+   "ttm_median_hours": 7.3,
+   "authors": {
+    "Jamesl28": {
+     "merged": 2,
+     "opened": 0,
+     "shepherded": 0,
+     "reviews": 1,
+     "ttm_avg_hours": 409.4
+    },
+    "MaGomesP": {
+     "merged": 33,
+     "opened": 32,
+     "shepherded": 3,
+     "reviews": 25,
+     "ttm_avg_hours": 37.4
+    },
+    "linuxlewis": {
+     "merged": 13,
+     "opened": 13,
+     "shepherded": 7,
+     "reviews": 24,
+     "ttm_avg_hours": 9.1
+    },
+    "lucascamposj": {
+     "merged": 10,
+     "opened": 8,
+     "shepherded": 0,
+     "reviews": 19,
+     "ttm_avg_hours": 28.6
+    },
+    "rafamfonseca": {
+     "merged": 4,
+     "opened": 5,
+     "shepherded": 11,
+     "reviews": 16,
+     "ttm_avg_hours": 77.7
+    }
+   }
+  },
+  {
+   "start": "2026-04-29",
+   "end": "2026-05-12",
+   "opened": 51,
+   "merged": 44,
+   "ai": 33,
+   "ttm_avg_hours": 76.0,
+   "ttm_median_hours": 17.9,
+   "authors": {
+    "Jamesl28": {
+     "merged": 6,
+     "opened": 8,
+     "shepherded": 0,
+     "reviews": 5,
+     "ttm_avg_hours": 216.5
+    },
+    "MaGomesP": {
+     "merged": 12,
+     "opened": 10,
+     "shepherded": 4,
+     "reviews": 10,
+     "ttm_avg_hours": 126.1
+    },
+    "linuxlewis": {
+     "merged": 18,
+     "opened": 22,
+     "shepherded": 19,
+     "reviews": 32,
+     "ttm_avg_hours": 20.0
+    },
+    "lucascamposj": {
+     "merged": 3,
+     "opened": 5,
+     "shepherded": 0,
+     "reviews": 8,
+     "ttm_avg_hours": 40.7
+    },
+    "rafamfonseca": {
+     "merged": 5,
+     "opened": 6,
+     "shepherded": 4,
+     "reviews": 14,
+     "ttm_avg_hours": 9.6
+    }
+   }
+  },
+  {
+   "start": "2026-05-13",
+   "end": "2026-05-26",
+   "opened": 116,
+   "merged": 102,
+   "ai": 31,
+   "ttm_avg_hours": 37.4,
+   "ttm_median_hours": 12.6,
+   "authors": {
+    "Jamesl28": {
+     "merged": 13,
+     "opened": 12,
+     "shepherded": 1,
+     "reviews": 20,
+     "ttm_avg_hours": 59.9
+    },
+    "MaGomesP": {
+     "merged": 20,
+     "opened": 21,
+     "shepherded": 4,
+     "reviews": 19,
+     "ttm_avg_hours": 66.3
+    },
+    "linuxlewis": {
+     "merged": 49,
+     "opened": 53,
+     "shepherded": 11,
+     "reviews": 35,
+     "ttm_avg_hours": 24.2
+    },
+    "lucascamposj": {
+     "merged": 15,
+     "opened": 22,
+     "shepherded": 0,
+     "reviews": 16,
+     "ttm_avg_hours": 27.9
+    },
+    "rafamfonseca": {
+     "merged": 5,
+     "opened": 8,
+     "shepherded": 10,
+     "reviews": 31,
+     "ttm_avg_hours": 21.7
+    }
+   }
+  },
+  {
+   "start": "2026-05-27",
+   "end": "2026-06-09",
+   "opened": 81,
+   "merged": 76,
+   "ai": 23,
+   "ttm_avg_hours": 61.1,
+   "ttm_median_hours": 24.1,
+   "authors": {
+    "Jamesl28": {
+     "merged": 11,
+     "opened": 15,
+     "shepherded": 1,
+     "reviews": 14,
+     "ttm_avg_hours": 76.1
+    },
+    "MaGomesP": {
+     "merged": 17,
+     "opened": 19,
+     "shepherded": 3,
+     "reviews": 16,
+     "ttm_avg_hours": 52.5
+    },
+    "linuxlewis": {
+     "merged": 27,
+     "opened": 28,
+     "shepherded": 8,
+     "reviews": 43,
+     "ttm_avg_hours": 49.2
+    },
+    "lucascamposj": {
+     "merged": 19,
+     "opened": 19,
+     "shepherded": 0,
+     "reviews": 11,
+     "ttm_avg_hours": 77.5
+    },
+    "rafamfonseca": {
+     "merged": 2,
+     "opened": 0,
+     "shepherded": 10,
+     "reviews": 25,
+     "ttm_avg_hours": 56.9
+    }
+   }
+  },
+  {
+   "start": "2026-06-10",
+   "end": "2026-06-23",
+   "opened": 116,
+   "merged": 90,
+   "ai": 46,
+   "ttm_avg_hours": 54.2,
+   "ttm_median_hours": 13.9,
+   "authors": {
+    "Jamesl28": {
+     "merged": 10,
+     "opened": 13,
+     "shepherded": 7,
+     "reviews": 14,
+     "ttm_avg_hours": 92.4
+    },
+    "MaGomesP": {
+     "merged": 17,
+     "opened": 21,
+     "shepherded": 0,
+     "reviews": 11,
+     "ttm_avg_hours": 47.5
+    },
+    "linuxlewis": {
+     "merged": 40,
+     "opened": 59,
+     "shepherded": 13,
+     "reviews": 37,
+     "ttm_avg_hours": 31.4
+    },
+    "lucascamposj": {
+     "merged": 16,
+     "opened": 16,
+     "shepherded": 0,
+     "reviews": 15,
+     "ttm_avg_hours": 60.5
+    },
+    "rafamfonseca": {
+     "merged": 7,
+     "opened": 7,
+     "shepherded": 13,
+     "reviews": 28,
+     "ttm_avg_hours": 131.1
+    }
+   }
+  },
+  {
+   "start": "2026-06-24",
+   "end": "2026-06-30",
+   "opened": 50,
+   "merged": 57,
+   "ai": 13,
+   "ttm_avg_hours": 65.9,
+   "ttm_median_hours": 14.6,
+   "authors": {
+    "Jamesl28": {
+     "merged": 11,
+     "opened": 10,
+     "shepherded": 0,
+     "reviews": 9,
+     "ttm_avg_hours": 118.0
+    },
+    "MaGomesP": {
+     "merged": 21,
+     "opened": 18,
+     "shepherded": 0,
+     "reviews": 8,
+     "ttm_avg_hours": 50.4
+    },
+    "jordanmoritz": {
+     "merged": 0,
+     "opened": 0,
+     "shepherded": 0,
+     "reviews": 1,
+     "ttm_avg_hours": null
+    },
+    "linuxlewis": {
+     "merged": 18,
+     "opened": 15,
+     "shepherded": 4,
+     "reviews": 17,
+     "ttm_avg_hours": 26.5
+    },
+    "lucascamposj": {
+     "merged": 5,
+     "opened": 5,
+     "shepherded": 0,
+     "reviews": 5,
+     "ttm_avg_hours": 176.2
+    },
+    "rafamfonseca": {
+     "merged": 2,
+     "opened": 2,
+     "shepherded": 4,
+     "reviews": 9,
+     "ttm_avg_hours": 22.1
+    }
+   }
+  },
+  {
+   "start": "2026-07-01",
+   "end": "2026-07-14",
+   "opened": 134,
+   "merged": 114,
+   "ai": 21,
+   "ttm_avg_hours": 35.7,
+   "ttm_median_hours": 9.0,
+   "authors": {
+    "Jamesl28": {
+     "merged": 17,
+     "opened": 17,
+     "shepherded": 1,
+     "reviews": 11,
+     "ttm_avg_hours": 46.3
+    },
+    "MaGomesP": {
+     "merged": 31,
+     "opened": 33,
+     "shepherded": 2,
+     "reviews": 15,
+     "ttm_avg_hours": 36.7
+    },
+    "alettieri": {
+     "merged": 12,
+     "opened": 16,
+     "shepherded": 0,
+     "reviews": 10,
+     "ttm_avg_hours": 6.0
+    },
+    "linuxlewis": {
+     "merged": 36,
+     "opened": 49,
+     "shepherded": 1,
+     "reviews": 17,
+     "ttm_avg_hours": 37.3
+    },
+    "lucascamposj": {
+     "merged": 14,
+     "opened": 14,
+     "shepherded": 1,
+     "reviews": 11,
+     "ttm_avg_hours": 52.2
+    },
+    "rafamfonseca": {
+     "merged": 4,
+     "opened": 5,
+     "shepherded": 5,
+     "reviews": 11,
+     "ttm_avg_hours": 0.9
+    }
+   }
+  },
+  {
+   "start": "2026-07-15",
+   "end": "2026-07-28",
+   "opened": 167,
+   "merged": 146,
+   "ai": 26,
+   "ttm_avg_hours": 32.1,
+   "ttm_median_hours": 4.5,
+   "authors": {
+    "Jamesl28": {
+     "merged": 13,
+     "opened": 19,
+     "shepherded": 2,
+     "reviews": 13,
+     "ttm_avg_hours": 39.4
+    },
+    "MaGomesP": {
+     "merged": 29,
+     "opened": 35,
+     "shepherded": 0,
+     "reviews": 17,
+     "ttm_avg_hours": 33.5
+    },
+    "alettieri": {
+     "merged": 59,
+     "opened": 63,
+     "shepherded": 0,
+     "reviews": 33,
+     "ttm_avg_hours": 10.5
+    },
+    "linuxlewis": {
+     "merged": 19,
+     "opened": 22,
+     "shepherded": 9,
+     "reviews": 20,
+     "ttm_avg_hours": 53.7
+    },
+    "lucascamposj": {
+     "merged": 19,
+     "opened": 20,
+     "shepherded": 3,
+     "reviews": 22,
+     "ttm_avg_hours": 50.7
+    },
+    "rafamfonseca": {
+     "merged": 7,
+     "opened": 8,
+     "shepherded": 7,
+     "reviews": 15,
+     "ttm_avg_hours": 86.8
+    }
+   }
+  },
+  {
+   "start": "2026-07-29",
+   "end": "2026-08-11",
+   "opened": 165,
+   "merged": 143,
+   "ai": 46,
+   "ttm_avg_hours": 25.3,
+   "ttm_median_hours": 4.2,
+   "authors": {
+    "Jamesl28": {
+     "merged": 27,
+     "opened": 33,
+     "shepherded": 0,
+     "reviews": 11,
+     "ttm_avg_hours": 52.7
+    },
+    "MaGomesP": {
+     "merged": 20,
+     "opened": 23,
+     "shepherded": 0,
+     "reviews": 11,
+     "ttm_avg_hours": 27.6
+    },
+    "alettieri": {
+     "merged": 58,
+     "opened": 61,
+     "shepherded": 5,
+     "reviews": 31,
+     "ttm_avg_hours": 7.6
+    },
+    "linuxlewis": {
+     "merged": 9,
+     "opened": 12,
+     "shepherded": 5,
+     "reviews": 17,
+     "ttm_avg_hours": 21.9
+    },
+    "lucascamposj": {
+     "merged": 21,
+     "opened": 24,
+     "shepherded": 5,
+     "reviews": 31,
+     "ttm_avg_hours": 36.7
+    },
+    "rafamfonseca": {
+     "merged": 8,
+     "opened": 12,
+     "shepherded": 9,
+     "reviews": 20,
+     "ttm_avg_hours": 29.6
+    }
+   }
+  },
+  {
+   "start": "2026-08-12",
+   "end": "2026-08-25",
+   "opened": 193,
+   "merged": 173,
+   "ai": 31,
+   "ttm_avg_hours": 33.2,
+   "ttm_median_hours": 6.2,
+   "authors": {
+    "Jamesl28": {
+     "merged": 35,
+     "opened": 42,
+     "shepherded": 1,
+     "reviews": 26,
+     "ttm_avg_hours": 43.8
+    },
+    "MaGomesP": {
+     "merged": 20,
+     "opened": 23,
+     "shepherded": 0,
+     "reviews": 9,
+     "ttm_avg_hours": 41.3
+    },
+    "alettieri": {
+     "merged": 40,
+     "opened": 41,
+     "shepherded": 1,
+     "reviews": 17,
+     "ttm_avg_hours": 4.8
+    },
+    "linuxlewis": {
+     "merged": 25,
+     "opened": 27,
+     "shepherded": 1,
+     "reviews": 13,
+     "ttm_avg_hours": 20.2
+    },
+    "lucascamposj": {
+     "merged": 28,
+     "opened": 28,
+     "shepherded": 9,
+     "reviews": 34,
+     "ttm_avg_hours": 59.9
+    },
+    "rafamfonseca": {
+     "merged": 25,
+     "opened": 32,
+     "shepherded": 2,
+     "reviews": 17,
+     "ttm_avg_hours": 40.6
+    }
+   }
+  },
+  {
+   "start": "2026-08-26",
+   "end": "2026-09-08",
+   "opened": 127,
+   "merged": 95,
+   "ai": 15,
+   "ttm_avg_hours": 48.4,
+   "ttm_median_hours": 20.0,
+   "authors": {
+    "Jamesl28": {
+     "merged": 13,
+     "opened": 23,
+     "shepherded": 1,
+     "reviews": 11,
+     "ttm_avg_hours": 80.1
+    },
+    "MaGomesP": {
+     "merged": 19,
+     "opened": 26,
+     "shepherded": 0,
+     "reviews": 5,
+     "ttm_avg_hours": 38.9
+    },
+    "alettieri": {
+     "merged": 7,
+     "opened": 11,
+     "shepherded": 0,
+     "reviews": 14,
+     "ttm_avg_hours": 58.7
+    },
+    "linuxlewis": {
+     "merged": 20,
+     "opened": 29,
+     "shepherded": 5,
+     "reviews": 27,
+     "ttm_avg_hours": 22.1
+    },
+    "lucascamposj": {
+     "merged": 19,
+     "opened": 18,
+     "shepherded": 1,
+     "reviews": 21,
+     "ttm_avg_hours": 65.6
+    },
+    "rafamfonseca": {
+     "merged": 17,
+     "opened": 20,
+     "shepherded": 3,
+     "reviews": 20,
+     "ttm_avg_hours": 42.4
+    }
+   }
+  },
+  {
+   "start": "2026-09-09",
+   "end": "2026-09-22",
+   "opened": 168,
+   "merged": 144,
+   "ai": 17,
+   "ttm_avg_hours": 40.7,
+   "ttm_median_hours": 3.9,
+   "authors": {
+    "Jamesl28": {
+     "merged": 16,
+     "opened": 20,
+     "shepherded": 0,
+     "reviews": 10,
+     "ttm_avg_hours": 37.1
+    },
+    "MaGomesP": {
+     "merged": 54,
+     "opened": 56,
+     "shepherded": 0,
+     "reviews": 12,
+     "ttm_avg_hours": 46.2
+    },
+    "alettieri": {
+     "merged": 15,
+     "opened": 18,
+     "shepherded": 0,
+     "reviews": 10,
+     "ttm_avg_hours": 23.9
+    },
+    "linuxlewis": {
+     "merged": 16,
+     "opened": 19,
+     "shepherded": 4,
+     "reviews": 30,
+     "ttm_avg_hours": 19.0
+    },
+    "lucascamposj": {
+     "merged": 21,
+     "opened": 23,
+     "shepherded": 7,
+     "reviews": 22,
+     "ttm_avg_hours": 48.4
+    },
+    "rafamfonseca": {
+     "merged": 22,
+     "opened": 32,
+     "shepherded": 2,
+     "reviews": 23,
+     "ttm_avg_hours": 49.8
+    }
+   }
+  },
+  {
+   "start": "2026-09-23",
+   "end": "2026-09-30",
+   "opened": 81,
+   "merged": 76,
+   "ai": 21,
+   "ttm_avg_hours": 41.5,
+   "ttm_median_hours": 4.2,
+   "authors": {
+    "Jamesl28": {
+     "merged": 7,
+     "opened": 10,
+     "shepherded": 0,
+     "reviews": 5,
+     "ttm_avg_hours": 8.4
+    },
+    "MaGomesP": {
+     "merged": 18,
+     "opened": 15,
+     "shepherded": 0,
+     "reviews": 3,
+     "ttm_avg_hours": 29.8
+    },
+    "alettieri": {
+     "merged": 1,
+     "opened": 0,
+     "shepherded": 0,
+     "reviews": 0,
+     "ttm_avg_hours": 239.4
+    },
+    "linuxlewis": {
+     "merged": 15,
+     "opened": 23,
+     "shepherded": 6,
+     "reviews": 21,
+     "ttm_avg_hours": 36.6
+    },
+    "lucascamposj": {
+     "merged": 15,
+     "opened": 14,
+     "shepherded": 3,
+     "reviews": 13,
+     "ttm_avg_hours": 48.5
+    },
+    "rafamfonseca": {
+     "merged": 20,
+     "opened": 19,
+     "shepherded": 1,
+     "reviews": 16,
+     "ttm_avg_hours": 52.0
+    }
+   }
+  }
+ ]
+}
