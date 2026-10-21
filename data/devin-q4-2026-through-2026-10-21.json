@@ -1,0 +1,597 @@
+[
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1614,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "WEB-4886: Add Empower to pharmacy shipping config options",
+  "created": "2026-09-30T16:53:05Z",
+  "merged": "2026-10-02T13:58:42Z",
+  "hours": 45.09361111111111,
+  "q": "Q4",
+  "credited_to": "linuxlewis",
+  "approved_at": "2026-10-02T13:31:37Z",
+  "all_approvals": [
+   [
+    "linuxlewis",
+    "APPROVED",
+    "2026-10-02T13:31:37Z"
+   ]
+  ],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "github-actions[bot]",
+   "linuxlewis"
+  ]
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1634,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "WEB-4828: Remove the legacy Medication History page",
+  "created": "2026-10-09T12:46:37Z",
+  "merged": "2026-10-09T19:55:53Z",
+  "hours": 7.154444444444445,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "github-actions[bot]"
+  ]
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1642,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "WEB-4977: rename Session Log \"Journey started/completed at\" columns to \"Medicine\"",
+  "created": "2026-10-19T20:23:01Z",
+  "merged": "2026-10-20T18:24:14Z",
+  "hours": 22.02027777777778,
+  "q": "Q4",
+  "credited_to": "linuxlewis",
+  "approved_at": "2026-10-20T18:10:10Z",
+  "all_approvals": [
+   [
+    "linuxlewis",
+    "APPROVED",
+    "2026-10-20T18:10:10Z"
+   ]
+  ],
+  "reviewers": [
+   "alettieri",
+   "devin-ai-integration[bot]",
+   "github-actions[bot]",
+   "linuxlewis"
+  ]
+ },
+ {
+  "repo": "mindbloomBackOffice",
+  "n": 1643,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "WEB-4953: link the Rx summary strip tracking number to the carrier",
+  "created": "2026-10-19T21:10:52Z",
+  "merged": "2026-10-20T13:45:39Z",
+  "hours": 16.579722222222223,
+  "q": "Q4",
+  "credited_to": "linuxlewis",
+  "approved_at": "2026-10-20T13:43:46Z",
+  "all_approvals": [
+   [
+    "linuxlewis",
+    "APPROVED",
+    "2026-10-20T13:43:46Z"
+   ]
+  ],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "github-actions[bot]",
+   "linuxlewis"
+  ]
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3612,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": ":fire: Chore: MOB-1863 Remove paused Music Matching (Help me choose) mobile code",
+  "created": "2026-09-30T23:49:36Z",
+  "merged": "2026-10-01T15:42:03Z",
+  "hours": 15.874166666666667,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "devin-ai-integration[bot]"
+  ]
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3616,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "[FF Cleanup] Remove Statsig feature flag: session-prep-schedule-secondary",
+  "created": "2026-10-01T17:17:04Z",
+  "merged": "2026-10-09T17:22:08Z",
+  "hours": 192.08444444444444,
+  "q": "Q4",
+  "credited_to": "lucascamposj",
+  "approved_at": "2026-10-09T16:26:03Z",
+  "all_approvals": [
+   [
+    "lucascamposj",
+    "APPROVED",
+    "2026-10-09T16:26:03Z"
+   ]
+  ],
+  "reviewers": [
+   "lucascamposj"
+  ]
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3621,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": ":bug: Fix: SUP-674 Unblock JournalSaved buttons when journal analysis fails",
+  "created": "2026-10-05T13:33:00Z",
+  "merged": "2026-10-07T15:32:19Z",
+  "hours": 49.98861111111111,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "github-actions[bot]",
+   "lucascamposj"
+  ]
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3622,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": ":bug: Fix: SUP-674 Confirm before discarding an unsaved photo journal entry",
+  "created": "2026-10-05T14:28:22Z",
+  "merged": "2026-10-07T14:56:38Z",
+  "hours": 48.471111111111114,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "github-actions[bot]"
+  ]
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3623,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": ":bug: Fix: SUP-680 Reset Intercom on impersonation start and every logout",
+  "created": "2026-10-05T15:39:07Z",
+  "merged": "2026-10-07T15:16:39Z",
+  "hours": 47.62555555555556,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "lucascamposj"
+  ]
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3641,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": ":bug: Fix: SUP-712 Keep screen awake on TextCard so integration videos keep playing",
+  "created": "2026-10-14T19:10:11Z",
+  "merged": "2026-10-15T22:54:23Z",
+  "hours": 27.736666666666668,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": []
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3649,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": ":pencil2: Fix: MOB-1974 Clarify Voice notes helper copy on Journey Step 1",
+  "created": "2026-10-19T16:29:39Z",
+  "merged": "2026-10-19T18:36:39Z",
+  "hours": 2.1166666666666667,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": []
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3650,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": ":bug: Fix: SUP-725 Let the journal camera button reopen the photo picker after a scan",
+  "created": "2026-10-19T16:32:18Z",
+  "merged": "2026-10-19T18:20:40Z",
+  "hours": 1.806111111111111,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "linuxlewis"
+  ]
+ },
+ {
+  "repo": "mindbloomMobile",
+  "n": 3651,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "MOB-1976: Add \"Email/Text code instead\" CTA to verification code entry",
+  "created": "2026-10-19T17:18:44Z",
+  "merged": "2026-10-19T18:13:57Z",
+  "hours": 0.9202777777777778,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "linuxlewis"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6100,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "[FF Cleanup] Remove Statsig feature flag: sales-crm-call-touch",
+  "created": "2026-09-30T17:11:42Z",
+  "merged": "2026-10-01T19:49:55Z",
+  "hours": 26.636944444444445,
+  "q": "Q4",
+  "credited_to": "Jamesl28",
+  "approved_at": "2026-10-01T19:33:18Z",
+  "all_approvals": [
+   [
+    "Jamesl28",
+    "APPROVED",
+    "2026-10-01T19:33:18Z"
+   ]
+  ],
+  "reviewers": [
+   "Jamesl28",
+   "devin-ai-integration[bot]"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6101,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "[FF Cleanup] Remove Statsig feature flag: sales-crm-sms-ingestion",
+  "created": "2026-09-30T17:13:07Z",
+  "merged": "2026-10-01T17:09:05Z",
+  "hours": 23.932777777777776,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "devin-ai-integration[bot]"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6109,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "WEB-4720: remove duplicate legacy Session Log entries",
+  "created": "2026-09-30T20:16:57Z",
+  "merged": "2026-10-07T19:17:47Z",
+  "hours": 167.01388888888889,
+  "q": "Q4",
+  "credited_to": "linuxlewis",
+  "approved_at": "2026-10-01T19:31:40Z",
+  "all_approvals": [
+   [
+    "linuxlewis",
+    "APPROVED",
+    "2026-10-01T19:31:40Z"
+   ]
+  ],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "linuxlewis"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6110,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "[FF Cleanup] Remove stale sales-crm-sms-ingestion wording from JustCall webhook schema",
+  "created": "2026-10-01T17:11:20Z",
+  "merged": "2026-10-01T20:22:28Z",
+  "hours": 3.1855555555555557,
+  "q": "Q4",
+  "credited_to": "Jamesl28",
+  "approved_at": "2026-10-01T20:03:24Z",
+  "all_approvals": [
+   [
+    "Jamesl28",
+    "APPROVED",
+    "2026-10-01T20:03:24Z"
+   ]
+  ],
+  "reviewers": [
+   "Jamesl28",
+   "devin-ai-integration[bot]"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6120,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "fix(SUP-669): move Acuity check-ins retyped to a card type onto the card",
+  "created": "2026-10-05T14:00:55Z",
+  "merged": "2026-10-05T23:30:32Z",
+  "hours": 9.493611111111111,
+  "q": "Q4",
+  "credited_to": "linuxlewis",
+  "approved_at": "2026-10-05T23:10:19Z",
+  "all_approvals": [
+   [
+    "linuxlewis",
+    "APPROVED",
+    "2026-10-05T23:10:19Z"
+   ]
+  ],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "github-actions[bot]",
+   "github-advanced-security[bot]",
+   "linuxlewis"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6127,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "WEB-4785: pin the chosen default card on the client's subscriptions",
+  "created": "2026-10-05T23:13:29Z",
+  "merged": "2026-10-07T19:32:56Z",
+  "hours": 44.32416666666666,
+  "q": "Q4",
+  "credited_to": "linuxlewis",
+  "approved_at": "2026-10-07T19:17:20Z",
+  "all_approvals": [
+   [
+    "linuxlewis",
+    "APPROVED",
+    "2026-10-07T19:17:20Z"
+   ]
+  ],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "github-actions[bot]",
+   "linuxlewis"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6131,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "Fail fast on Bedrock timeouts and deprioritize recommendation reminders",
+  "created": "2026-10-06T15:19:16Z",
+  "merged": "2026-10-07T14:58:45Z",
+  "hours": 23.658055555555556,
+  "q": "Q4",
+  "credited_to": "linuxlewis",
+  "approved_at": "2026-10-06T16:48:55Z",
+  "all_approvals": [
+   [
+    "linuxlewis",
+    "APPROVED",
+    "2026-10-06T16:48:55Z"
+   ]
+  ],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "linuxlewis"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6140,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "[FF Cleanup] Remove Statsig feature flag: session_rating_triage_enabled",
+  "created": "2026-10-07T17:24:39Z",
+  "merged": "2026-10-09T16:30:31Z",
+  "hours": 47.09777777777778,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "devin-ai-integration[bot]"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6141,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "[FF Cleanup] Remove Statsig feature flag: guide_session_review_enabled",
+  "created": "2026-10-07T17:24:43Z",
+  "merged": "2026-10-09T16:56:01Z",
+  "hours": 47.52166666666667,
+  "q": "Q4",
+  "credited_to": "lucascamposj",
+  "approved_at": "2026-10-09T16:21:18Z",
+  "all_approvals": [
+   [
+    "lucascamposj",
+    "APPROVED",
+    "2026-10-09T16:21:18Z"
+   ]
+  ],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "github-actions[bot]",
+   "lucascamposj"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6146,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "WEB-4720: number staff Session Log sessions per purchased program",
+  "created": "2026-10-07T21:33:45Z",
+  "merged": "2026-10-07T21:54:43Z",
+  "hours": 0.34944444444444445,
+  "q": "Q4",
+  "credited_to": "linuxlewis",
+  "approved_at": "2026-10-07T21:51:17Z",
+  "all_approvals": [
+   [
+    "linuxlewis",
+    "APPROVED",
+    "2026-10-07T21:51:17Z"
+   ]
+  ],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "linuxlewis"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6150,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "SUP-687: Count attended clinician check-ins from prior programs toward 90-day clinician rule",
+  "created": "2026-10-07T22:14:27Z",
+  "merged": "2026-10-08T19:55:20Z",
+  "hours": 21.68138888888889,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "devin-ai-integration[bot]"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6154,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "WEB-4946: Ignore stale DrChrono clinical note lock events that finish out of order",
+  "created": "2026-10-08T17:05:06Z",
+  "merged": "2026-10-09T16:06:40Z",
+  "hours": 23.02611111111111,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "lucascamposj"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6171,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "[Datadog f976f3fa] Normalize naive AfterShip datetimes to aware (WEB-4964)",
+  "created": "2026-10-14T22:06:47Z",
+  "merged": "2026-10-16T20:23:23Z",
+  "hours": 46.276666666666664,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "devin-ai-integration[bot]"
+  ]
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1809,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "WEB-4884: Remove stacked overlay blocking the mobile checkout promo field",
+  "created": "2026-10-02T06:48:00Z",
+  "merged": "2026-10-02T19:57:17Z",
+  "hours": 13.154722222222222,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "github-actions[bot]"
+  ]
+ },
+ {
+  "repo": "mindbloomFrontend",
+  "n": 1837,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "MOB-1976: Add \"Email/Text code instead\" link to the login code step",
+  "created": "2026-10-19T17:18:48Z",
+  "merged": "2026-10-20T18:21:04Z",
+  "hours": 25.037777777777777,
+  "q": "Q4",
+  "credited_to": "linuxlewis",
+  "approved_at": "2026-10-20T18:08:55Z",
+  "all_approvals": [
+   [
+    "linuxlewis",
+    "APPROVED",
+    "2026-10-20T18:08:55Z"
+   ]
+  ],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "linuxlewis"
+  ]
+ },
+ {
+  "repo": "mindbloomBackend",
+  "n": 6023,
+  "author": "devin-ai-integration[bot]",
+  "type": "Bot",
+  "title": "SUP-632: Include appointment type and staff name in no-show SMS",
+  "created": "2026-09-22T04:10:05Z",
+  "merged": "2026-10-08T15:08:15Z",
+  "hours": 394.96944444444443,
+  "q": "Q4",
+  "credited_to": null,
+  "approved_at": null,
+  "all_approvals": [],
+  "reviewers": [
+   "devin-ai-integration[bot]",
+   "github-actions[bot]",
+   "linuxlewis",
+   "rafamfonseca"
+  ]
+ }
+]
