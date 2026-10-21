@@ -9,25 +9,36 @@ Metrics:
   - PRs authored (merged) per person per cycle
   - PRs opened per person per cycle
   - Reviews given per person per cycle
-  - Time to merge (created → merged) per person and team average
+  - Time to merge (created → merged) per person and team average (human-authored PRs only)
+
+PRs/engineer KPI: human-authored merged PRs plus merged Devin PRs credited to
+their first human approver (bots and EXCLUDED_USERS never count as approvers).
+Devin PRs with no human approval are excluded and reported as a count.
 
 Usage:
     python pr-metrics.py                        # last 1 cycle (2 weeks)
     python pr-metrics.py 4                      # last 4 cycles (8 weeks)
     python pr-metrics.py 2025-01-01 2025-06-01  # custom date range
 
-    # Build without gh: frozen history + pre-collected merged PRs
+    # Build without gh: frozen Q1-Q2 history + pre-collected Q3-Q4 PRs
     python pr-metrics.py 2026-01-01 2026-10-21 \\
-        --history pr-metrics-history.json --input q4_human_merged.json \\
+        --history pr-metrics-history.json --collect-from 2026-07-01 \\
+        --input data/q3-2026-human-merged.json \\
+        --input data/q4-2026-human-merged-through-2026-10-21.json \\
+        --input data/devin-q3-2026.json \\
+        --input data/devin-q4-2026-through-2026-10-21.json \\
         --as-of "2026-10-21 ~9:31 AM CT"
 
---input takes a JSON list of merged PRs ({author, created/createdAt/created_at,
-merged/mergedAt/merged_at}, optional repo, n/number, reviewers, is_ai_pr,
-shepherd), or an object {"merged": [...], "opened": [...]}. Metrics the input
+--input (repeatable) takes a JSON list of merged PRs ({author,
+created/createdAt/created_at, merged/mergedAt/merged_at}, optional repo,
+n/number, reviewers, is_ai_pr, shepherd/credited_to, all_approvals), or an
+object {"merged": [...], "opened": [...]}. Devin PRs are credited from
+all_approvals ([login, state, submitted_at]) when present. Metrics the input
 does not contain (opened, reviews, AI PRs) are reported as not collected.
 
 --history takes frozen per-cycle aggregates for earlier cycles; collection
-(live or --input) starts the day after the last frozen cycle.
+(live or --input) starts the day after the last frozen cycle, or at
+--collect-from. Frozen cycles do not get Devin crediting (no per-PR reviews).
 
 Requires: gh (GitHub CLI) authenticated with org access, unless --input is used
 """
@@ -196,7 +207,7 @@ def fetch_merged_prs(repo: str, start: str, end: str) -> list[dict]:
                 approvers.append(reviewer)
 
         # For AI agent PRs, attribute to the first human approver
-        is_ai_pr = author in AI_AGENTS
+        is_ai_pr = is_ai_agent(author)
         shepherd = approvers[0] if (is_ai_pr and approvers) else None
 
         created_at = node.get("createdAt")
@@ -229,8 +240,27 @@ def fetch_opened_prs(repo: str, start: str, end: str) -> list[dict]:
 
 # ── Helpers ─────────────────────────────────────────────────
 
+def base_login(username: str) -> str:
+    """GraphQL returns bot logins bare; REST exports append "[bot]"."""
+    return username.removesuffix("[bot]")
+
+
 def is_human(username: str) -> bool:
-    return username not in BOTS and username not in EXCLUDED_USERS
+    base = base_login(username)
+    return not username.endswith("[bot]") and base not in BOTS and base not in EXCLUDED_USERS
+
+
+def is_ai_agent(username: str) -> bool:
+    return base_login(username) in AI_AGENTS
+
+
+def first_human_approver(approvals: list) -> str | None:
+    """approvals: [login, state, submitted_at] triples, as in the Devin credit exports."""
+    approved = sorted(
+        (a for a in approvals if a[1] == "APPROVED" and is_human(a[0])),
+        key=lambda a: a[2],
+    )
+    return approved[0][0] if approved else None
 
 
 def parse_ts(value: str) -> datetime:
@@ -253,15 +283,33 @@ def percentile(values: list[float], pct: float) -> float | None:
     return ordered[lo] + (ordered[hi] - ordered[lo]) * (rank - lo)
 
 
-def load_input_prs(path: str) -> dict:
-    """Load pre-collected PRs; returns merged/opened lists plus which metrics they cover."""
-    with open(path) as f:
-        data = json.load(f)
-    merged_raw = data["merged"] if isinstance(data, dict) else data
-    opened_raw = data.get("opened") if isinstance(data, dict) else None
+def load_input_prs(paths: list[str]) -> dict:
+    """Load pre-collected PRs from one or more files.
+
+    Returns merged/opened lists plus which metrics they cover.
+    """
+    merged_raw, opened_raw = [], None
+    for path in paths:
+        with open(path) as f:
+            data = json.load(f)
+        merged_raw.extend(data["merged"] if isinstance(data, dict) else data)
+        if isinstance(data, dict) and data.get("opened") is not None:
+            opened_raw = (opened_raw or []) + data["opened"]
 
     def field(record: dict, *names: str):
         return next((record[n] for n in names if record.get(n) is not None), None)
+
+    def shepherd_for(record: dict) -> str | None:
+        if "all_approvals" not in record:
+            return field(record, "shepherd", "credited_to")
+        shepherd = first_human_approver(record["all_approvals"])
+        if "credited_to" in record and record["credited_to"] != shepherd:
+            print(
+                f"  ⚠️  {record.get('repo')}#{record.get('n')}: credited_to={record['credited_to']} "
+                f"but first human approval is {shepherd}; using {shepherd}",
+                file=sys.stderr,
+            )
+        return shepherd
 
     merged, seen = [], set()
     for record in merged_raw:
@@ -273,11 +321,12 @@ def load_input_prs(path: str) -> dict:
             seen.add(key)
         created_at = field(record, "created_at", "createdAt", "created")
         merged_at = field(record, "merged_at", "mergedAt", "merged")
+        is_ai_pr = record.get("is_ai_pr", is_ai_agent(record["author"]))
         merged.append({
             "author": record["author"],
             "reviewers": record.get("reviewers", []),
-            "shepherd": record.get("shepherd"),
-            "is_ai_pr": record.get("is_ai_pr", False),
+            "shepherd": shepherd_for(record) if is_ai_pr else None,
+            "is_ai_pr": is_ai_pr,
             "created_at": created_at,
             "merged_at": merged_at,
             "ttm_hours": hours_between(created_at, merged_at),
@@ -291,8 +340,8 @@ def load_input_prs(path: str) -> dict:
     return {
         "merged": merged,
         "opened": opened,
-        "reviews_collected": any("reviewers" in r for r in merged_raw),
-        "ai_collected": any("is_ai_pr" in r for r in merged_raw),
+        "reviews_collected": bool(merged_raw) and all("reviewers" in r for r in merged_raw),
+        "ai_collected": any(pr["is_ai_pr"] for pr in merged) or any("is_ai_pr" in r for r in merged_raw),
     }
 
 
@@ -352,6 +401,8 @@ def summarize_cycle(
         "opened": len(human_opened) if human_opened is not None else None,
         "merged": len(human_merged),
         "ai": len(ai_merged) if ai_collected else None,
+        "ai_unapproved": sum(1 for pr in ai_merged if not pr.get("shepherd")) if ai_collected else None,
+        "devin_credit": ai_collected,
         "reviews": total_reviews,
         "ttm_avg_hours": avg_ttm(human_merged),
         "ttm_median_hours": median_ttm(human_merged),
@@ -434,8 +485,13 @@ def main():
 
     parser = argparse.ArgumentParser(description="Mindbloom PR metrics report")
     parser.add_argument("range", nargs="*", help="N cycles, or START END (YYYY-MM-DD)")
-    parser.add_argument("--input", help="JSON file of pre-collected PRs (skips gh)")
+    parser.add_argument("--input", action="append", help="JSON file of pre-collected PRs (skips gh); repeatable")
     parser.add_argument("--history", help="JSON file of frozen per-cycle aggregates for earlier cycles")
+    parser.add_argument(
+        "--collect-from",
+        help="YYYY-MM-DD: collect from this date even if --history covers it; frozen cycles from this date on "
+             "only fill metrics the collected data lacks (opened, reviews)",
+    )
     parser.add_argument("--as-of", help='Data retrieval time, e.g. "2026-10-21 ~9:31 AM CT" (marks the cutoff day as partial)')
     args = parser.parse_args()
 
@@ -468,6 +524,11 @@ def main():
         if history_cycles[0]["start"] != fmt_date(start_date):
             parser.error(f"START must be {history_cycles[0]['start']} (first frozen cycle) when --history is used")
         collect_start = datetime.strptime(history_cycles[-1]["end"], "%Y-%m-%d") + timedelta(days=1)
+    history_fill: dict[tuple[str, str], dict] = {}
+    if args.collect_from:
+        collect_start = datetime.strptime(args.collect_from, "%Y-%m-%d")
+        history_fill = {(c["start"], c["end"]): c for c in history_cycles if c["start"] >= args.collect_from}
+        history_cycles = [c for c in history_cycles if c["end"] < args.collect_from]
 
     input_data = load_input_prs(args.input) if args.input else None
     opened_collected = input_data is None or input_data["opened"] is not None
@@ -483,7 +544,7 @@ def main():
         print(f"  Frozen history: {len(history_cycles)} cycles through {history_cycles[-1]['end']}")
     if input_data is not None:
         missing = [name for name, ok in (("opened", opened_collected), ("reviews", reviews_collected), ("AI PRs", ai_collected)) if not ok]
-        print(f"  Input: {args.input} ({len(input_data['merged'])} merged PRs)")
+        print(f"  Input: {', '.join(args.input)} ({len(input_data['merged'])} merged PRs)")
         if missing:
             print(f"  Not collected in input: {', '.join(missing)}")
     print("═" * 60)
@@ -668,7 +729,7 @@ def main():
             print(f"  ⚠️  {len(input_data['merged']) - used} input PRs fall outside the report window and were ignored")
 
     # ── HTML Report ─────────────────────────────────────────
-    cycle_stats = history_cycles + [
+    collected_stats = [
         summarize_cycle(
             cs, ce, all_cycle_merged[i],
             all_cycle_opened[i] if opened_collected else None,
@@ -676,6 +737,26 @@ def main():
         )
         for i, (cs, ce) in enumerate(cycles)
     ]
+    for cycle in collected_stats:
+        frozen = history_fill.get((cycle["start"], cycle["end"]))
+        if frozen is None:
+            continue
+        for metric in ("opened", "reviews"):
+            if cycle[metric] is not None:
+                continue
+            cycle[metric] = frozen[metric]
+            cycle.setdefault("filled_from_history", []).append(metric)
+            for author, stats in cycle["authors"].items():
+                stats[metric] = 0
+            for author, stats in frozen["authors"].items():
+                cycle["authors"].setdefault(author, {
+                    "merged": 0,
+                    "opened": 0 if cycle["opened"] is not None else None,
+                    "reviews": 0 if cycle["reviews"] is not None else None,
+                    "shepherded": 0 if ai_collected else None,
+                    "ttm_avg_hours": None,
+                })[metric] = stats[metric]
+    cycle_stats = history_cycles + collected_stats
     script_dir = os.path.dirname(os.path.abspath(__file__))
     report_path = os.path.join(script_dir, "pr-metrics-report.html")
     generate_html_report(cycle_stats, history_quarters, start_date, end_date, report_path, args.as_of)
@@ -779,6 +860,13 @@ def generate_html_report(
             f"* Totals exclude {', '.join(uncollected_cycles)}: {', '.join(not_collected)} were not collected "
             f"for these cycles (pre-collected merged-PR input). Charts leave those points empty."
         )
+    filled_cycles = [c for c in cycle_stats if c.get("filled_from_history")]
+    if filled_cycles:
+        filled_metrics = sorted({m for c in filled_cycles for m in c["filled_from_history"]})
+        collection_note += (
+            f" {' and '.join(filled_metrics).capitalize()} counts for {filled_cycles[0]['start']} → "
+            f"{filled_cycles[-1]['end']} come from frozen history; all other metrics there use per-PR data."
+        )
     if not has_all_ttm_values:
         collection_note += (
             " Median time to merge for the full window needs per-PR data that the frozen history"
@@ -802,20 +890,54 @@ def generate_html_report(
                     counts[author] += stats["merged"]
         return counts
 
-    quarterly_data = {q: merged_by_author(idx) for q, idx in quarter_cycle_indices.items()}
+    def credited_by_author(indices: list[int]) -> dict[str, int]:
+        """Devin PRs credited to their first human approver, in cycles where the rule applies."""
+        counts = defaultdict(int)
+        for idx in indices:
+            if not cycle_stats[idx].get("devin_credit"):
+                continue
+            for author, stats in cycle_stats[idx]["authors"].items():
+                if stats.get("shepherded") and is_human(author):
+                    counts[author] += stats["shepherded"]
+        return counts
+
+    def kpi_by_author(indices: list[int]) -> dict[str, int]:
+        counts = merged_by_author(indices)
+        for author, credited in credited_by_author(indices).items():
+            counts[author] += credited
+        return counts
+
+    quarterly_data = {q: kpi_by_author(idx) for q, idx in quarter_cycle_indices.items()}
+    quarterly_own = {q: sum(merged_by_author(idx).values()) for q, idx in quarter_cycle_indices.items()}
+    quarterly_credited = {q: sum(credited_by_author(idx).values()) for q, idx in quarter_cycle_indices.items()}
+    quarterly_devin_credit = {
+        q: all(cycle_stats[i].get("devin_credit") for i in idx) for q, idx in quarter_cycle_indices.items()
+    }
+    quarterly_devin_excluded = {
+        q: sum(cycle_stats[i]["ai_unapproved"] for i in idx) if quarterly_devin_credit[q] else None
+        for q, idx in quarter_cycle_indices.items()
+    }
 
     # Build quarterly PRs/engineer data
     quarter_labels = sorted(quarterly_data.keys(), key=quarter_sort_key)
+    uncredited_quarters = [q for q in quarter_labels if not quarterly_devin_credit[q]]
+    devin_credit_note = (
+        f"Devin crediting is not applied to {', '.join(uncredited_quarters)}: the frozen history has no "
+        f"per-PR review data, so those quarters count human-authored PRs only."
+        if uncredited_quarters else ""
+    )
     quarterly_prs_per_eng = []
     quarterly_prs_per_eng_projection = []
     quarterly_total_merged = []
+    quarterly_total_kpi = []
     quarterly_total_ai = []
     quarterly_engineer_count = []
     for q in quarter_labels:
         total = sum(quarterly_data[q].values())
         eng_count = len(quarterly_data[q])
         ai_values = [cycle_stats[i]["ai"] for i in quarter_cycle_indices[q] if cycle_stats[i]["ai"] is not None]
-        quarterly_total_merged.append(total)
+        quarterly_total_merged.append(quarterly_own[q])
+        quarterly_total_kpi.append(total)
         quarterly_total_ai.append(sum(ai_values) if ai_values else None)
         quarterly_engineer_count.append(eng_count)
         quarterly_prs_per_eng.append(round(total / eng_count, 1) if eng_count else 0)
@@ -885,7 +1007,7 @@ def generate_html_report(
         )
         if not current_quarter_on_track and current_quarter_days_remaining:
             current_quarter_summary += (
-                f" Need {current_quarter_prs_needed} more merged PRs across the team, "
+                f" Need {current_quarter_prs_needed} more credited PRs across the team, "
                 f"or about {current_quarter_required_daily_prs:.1f}/day for the rest of the quarter."
             )
         current_quarter_target_text = f"KPI target: {current_quarter_target} PRs per engineer for {current_quarter_label}"
@@ -895,6 +1017,19 @@ def generate_html_report(
         quarterly_prs_per_eng_projection[current_quarter_index] = current_quarter_projected_prs_per_eng
 
     quarterly_target_line = [QUARTERLY_PRS_PER_ENGINEER_TARGETS.get(q) for q in quarter_labels]
+
+    current_quarter_own = quarterly_own.get(current_quarter_label, 0)
+    current_quarter_credited = quarterly_credited.get(current_quarter_label, 0)
+    current_quarter_excluded = quarterly_devin_excluded.get(current_quarter_label)
+    excluded_users = ", ".join(sorted(EXCLUDED_USERS))
+    if quarterly_devin_credit.get(current_quarter_label):
+        kpi_definition = (
+            "PRs/engineer = (human-authored merged PRs + merged Devin PRs credited to their first human approver) "
+            "÷ engineers with at least one credited PR this quarter; Devin PRs with no human approval are excluded."
+        )
+    else:
+        kpi_definition = "PRs/engineer = human merged PRs ÷ engineers with at least one merged PR this quarter."
+    kpi_definition += f" Bots and {excluded_users} are excluded. Projection is straight-line from days elapsed."
 
     # ── Time to merge KPI (current quarter) ─────────────────
     def fmt_ttm(hours: float | None) -> str:
@@ -944,7 +1079,7 @@ def generate_html_report(
         partial = " (to date)" if q == current_quarter_label and current_quarter_partial else ""
         ttm_rows += f"""      <tr>
         <td>{q}{partial}</td>
-        <td class="num">{sum(quarterly_data[q].values())}</td>
+        <td class="num">{quarterly_own[q]}</td>
         <td class="num">{fmt_ttm_detail(stats[50])}</td>
         <td class="num">{fmt_ttm_detail(stats[75])}</td>
         <td class="num"><strong>{fmt_ttm_detail(stats[90])}</strong></td>
@@ -988,9 +1123,11 @@ def generate_html_report(
         """
         cycles_in_window = [cycle_stats[i] for i in indices]
         merged_counts = merged_by_author(indices)
+        credited_counts = credited_by_author(indices)
+        kpi_counts = kpi_by_author(indices)
         authors = sorted(
-            merged_counts.keys(),
-            key=lambda author: (-merged_counts.get(author, 0), author.lower()),
+            kpi_counts.keys(),
+            key=lambda author: (-kpi_counts[author], -merged_counts.get(author, 0), author.lower()),
         )
 
         rows = []
@@ -1004,18 +1141,30 @@ def generate_html_report(
             rows.append({
                 "author": author,
                 "opened": fmt_total([author_value(c, author, "opened") for c in cycles_in_window]),
-                "merged": merged_counts[author],
+                "merged": merged_counts.get(author, 0),
                 "shepherded": fmt_total([author_value(c, author, "shepherded") for c in cycles_in_window]),
+                "credited": credited_counts.get(author, 0),
+                "kpi_total": kpi_counts[author],
                 "reviews": fmt_total([author_value(c, author, "reviews") for c in cycles_in_window]),
                 "avg_merge_time": (frozen_avg_merge_time or {}).get(author)
                 or (fmt_duration(ttm_hours / ttm_count) if ttm_count else "n/a"),
-                "merged_per_cycle": merged_counts[author] / len(indices) if indices else 0,
+                "merged_per_cycle": merged_counts.get(author, 0) / len(indices) if indices else 0,
             })
         return rows
 
-    def render_summary_table(title: str, rows: list[dict], subtitle: str | None = None) -> str:
-        """Render a summary table section."""
+    def render_summary_table(title: str, rows: list[dict], subtitle: str | None = None, credited: bool = False) -> str:
+        """Render a summary table section.
+
+        credited tables show own PRs, Devin PRs credited as first human approver, and the KPI total.
+        """
         subtitle_html = f'\n  <p class="section-subtitle">{subtitle}</p>' if subtitle else ""
+        if credited:
+            pr_headers = """        <th class="num">Own Merged</th>
+        <th class="num">Devin Credited</th>
+        <th class="num">KPI Total</th>"""
+        else:
+            pr_headers = """        <th class="num">Merged</th>
+        <th class="num">AI Shepherded</th>"""
         html_table = f"""<div class="chart-box summary-box">
   <h2>{title}</h2>{subtitle_html}
   <table>
@@ -1023,8 +1172,7 @@ def generate_html_report(
       <tr>
         <th>Author</th>
         <th class="num">Opened</th>
-        <th class="num">Merged</th>
-        <th class="num">AI Shepherded</th>
+{pr_headers}
         <th class="num">Reviews</th>
         <th class="num">Avg Merge Time</th>
         <th class="num">Merged/Cycle</th>
@@ -1033,11 +1181,17 @@ def generate_html_report(
     <tbody>
 """
         for row in rows:
+            if credited:
+                pr_cells = f"""        <td class="num">{row["merged"]}</td>
+        <td class="num">{row["credited"]}</td>
+        <td class="num"><strong>{row["kpi_total"]}</strong></td>"""
+            else:
+                pr_cells = f"""        <td class="num">{row["merged"]}</td>
+        <td class="num">{row["shepherded"]}</td>"""
             html_table += f"""      <tr>
         <td>{row["author"]}</td>
         <td class="num">{row["opened"]}</td>
-        <td class="num">{row["merged"]}</td>
-        <td class="num">{row["shepherded"]}</td>
+{pr_cells}
         <td class="num">{row["reviews"]}</td>
         <td class="num">{row["avg_merge_time"]}</td>
         <td class="num">{row["merged_per_cycle"]:.1f}</td>
@@ -1049,6 +1203,11 @@ def generate_html_report(
         return html_table
 
     overall_summary_rows = summarize_authors(list(range(num_cycles)))
+    overall_credited = any(c.get("devin_credit") for c in cycle_stats)
+    overall_subtitle = (
+        f"KPI Total = own merged PRs + Devin PRs credited to the first human approver. {devin_credit_note}"
+        if overall_credited else None
+    )
 
     quarterly_summary_sections = []
     for quarter in quarter_labels:
@@ -1059,15 +1218,32 @@ def generate_html_report(
             cycle_indices,
             history_quarters.get(quarter, {}).get("author_avg_merge_time") if frozen_quarter else None,
         )
-        subtitle = (
-            f"{fmt_total([c['opened'] for c in quarter_cycles])} opened · "
-            f"{sum(quarterly_data[quarter].values())} merged · "
-            f"{fmt_total([c['ai'] for c in quarter_cycles])} AI PRs · "
-            f"{len(quarterly_data[quarter])} contributors"
-        )
+        eng_count = len(quarterly_data[quarter])
+        kpi_total = sum(quarterly_data[quarter].values())
+        ppe = round(kpi_total / eng_count, 1) if eng_count else 0
+        if quarterly_devin_credit[quarter]:
+            subtitle = (
+                f"{fmt_total([c['opened'] for c in quarter_cycles])} opened · "
+                f"{quarterly_own[quarter]} human merged + {quarterly_credited[quarter]} Devin credited = "
+                f"{kpi_total} KPI PRs · {eng_count} engineers · "
+                f"{fmt_total([c['ai'] for c in quarter_cycles])} Devin PRs merged, "
+                f"{quarterly_devin_excluded[quarter]} excluded (no human approval)"
+            )
+        else:
+            subtitle = (
+                f"{fmt_total([c['opened'] for c in quarter_cycles])} opened · "
+                f"{kpi_total} merged · "
+                f"{fmt_total([c['ai'] for c in quarter_cycles])} AI PRs · "
+                f"{eng_count} contributors · Devin crediting not applied (no per-PR review data)"
+            )
+        goal = QUARTERLY_PRS_PER_ENGINEER_TARGETS.get(quarter)
         if quarter == current_quarter_label and current_quarter_partial:
             subtitle += f" · partial quarter through {fmt_date(end_date)}"
-        quarterly_summary_sections.append(render_summary_table(quarter, summary_rows, subtitle))
+        elif goal is not None:
+            subtitle += f" · {ppe:.1f} PRs/engineer vs {goal} goal ({'Achieved' if ppe >= goal else 'Missed'})"
+        quarterly_summary_sections.append(
+            render_summary_table(quarter, summary_rows, subtitle, credited=quarterly_devin_credit[quarter])
+        )
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1158,21 +1334,23 @@ def generate_html_report(
 
 <div class="chart-box kpi-box">
   <h2>{current_quarter_heading} KPI Pace</h2>
-  <p class="section-subtitle">{current_quarter_target_text} ({fmt_date(current_quarter_start)} → {fmt_date(current_quarter_end)}). {data_through}. PRs/engineer = human merged PRs ÷ engineers with at least one merged PR this quarter; bots, Devin, and {", ".join(sorted(EXCLUDED_USERS))} are excluded. Projection is straight-line from days elapsed.</p>
+  <p class="section-subtitle">{current_quarter_target_text} ({fmt_date(current_quarter_start)} → {fmt_date(current_quarter_end)}). {data_through}. {kpi_definition}</p>
   <div class="cards kpi-grid">
     <div class="card"><div class="value">{current_quarter_prs_per_eng:.1f}</div><div class="label">Actual PRs/Engineer</div></div>
     <div class="card"><div class="value">{current_quarter_projected_prs_per_eng:.1f}</div><div class="label">Projected PRs/Engineer</div></div>
-    <div class="card"><div class="value">{current_quarter_total_merged}</div><div class="label">Merged PRs This Quarter</div></div>
+    <div class="card"><div class="value">{current_quarter_total_merged}</div><div class="label">KPI PRs This Quarter{f" ({current_quarter_own} human + {current_quarter_credited} Devin)" if current_quarter_excluded is not None else ""}</div></div>
     <div class="card"><div class="value">{current_quarter_engineer_count}</div><div class="label">Active Engineers</div></div>
     <div class="card"><div class="value">{current_quarter_progress_pct:.1f}%</div><div class="label">Quarter Elapsed</div></div>
+    {f'<div class="card"><div class="value">{current_quarter_excluded}</div><div class="label">Devin PRs Excluded (no human approval; info only)</div></div>' if current_quarter_excluded is not None else ""}
     <div class="card"><div class="value"><span class="kpi-status {current_quarter_status_class}">{current_quarter_status}</span></div><div class="label">KPI Status</div></div>
   </div>
   <p class="kpi-summary"><strong>{current_quarter_label} outlook:</strong> {current_quarter_summary}</p>
+  {f'<p class="footnote">{devin_credit_note}</p>' if devin_credit_note else ''}
 </div>
 
 <div class="chart-box kpi-box">
   <h2>{current_quarter_heading} Time to Merge KPI</h2>
-  <p class="section-subtitle">Headline: P90 time from PR created to merged for human merged PRs{f"; goal P90 ≤ {fmt_goal_days(current_ttm_target)}" if current_ttm_target is not None else ""}. P50 is context. Percentiles use linear interpolation. {data_through}.</p>
+  <p class="section-subtitle">Headline: P90 time from PR created to merged for human-authored merged PRs (Devin PRs are not included){f"; goal P90 ≤ {fmt_goal_days(current_ttm_target)}" if current_ttm_target is not None else ""}. P50 is context. Percentiles use linear interpolation. {data_through}.</p>
   <div class="cards kpi-grid">
     <div class="card"><div class="value">{fmt_ttm(current_ttm[90])}</div><div class="label">{ttm_card_label("P90", current_ttm[90])}</div></div>
     <div class="card"><div class="value">{fmt_ttm(current_ttm[50])}</div><div class="label">{ttm_card_label("P50", current_ttm[50])}</div></div>
@@ -1185,7 +1363,7 @@ def generate_html_report(
     <thead>
       <tr>
         <th>Quarter</th>
-        <th class="num">Merged PRs</th>
+        <th class="num">Human Merged PRs</th>
         <th class="num">P50</th>
         <th class="num">P75</th>
         <th class="num">P90</th>
@@ -1202,7 +1380,7 @@ def generate_html_report(
 
 <div class="chart-grid">
   <div class="chart-box">
-    <h2>PRs Merged per Engineer (Quarterly)</h2>
+    <h2>KPI PRs per Engineer (Quarterly)</h2>
     <canvas id="qtrPerEngChart"></canvas>
   </div>
   <div class="chart-box">
@@ -1211,7 +1389,7 @@ def generate_html_report(
   </div>
 </div>
 
-{render_summary_table("Overall Summary", overall_summary_rows)}
+{render_summary_table("Overall Summary", overall_summary_rows, overall_subtitle, credited=overall_credited)}
 
 <div class="summary-grid">
   <div class="chart-box summary-box">
@@ -1317,9 +1495,9 @@ new Chart(document.getElementById('qtrPerEngChart'), {{
           afterLabel: function(ctx) {{
             const i = ctx.dataIndex;
             const counts = {json.dumps(quarterly_engineer_count)};
-            const totals = {json.dumps(quarterly_total_merged)};
+            const totals = {json.dumps(quarterly_total_kpi)};
             const projected = {json.dumps(quarterly_prs_per_eng_projection)};
-            const lines = [`${{totals[i]}} total PRs / ${{counts[i]}} engineers`];
+            const lines = [`${{totals[i]}} KPI PRs / ${{counts[i]}} engineers`];
             if (projected[i] !== null && projected[i] !== undefined) {{
               lines.push(`Projected finish: ${{projected[i]}} PRs/engineer`);
             }}
