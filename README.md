@@ -4,6 +4,8 @@ Mindbloom engineering KPI dashboard. `pr-metrics.py` builds `pr-metrics-report.h
 and copies it to `index.html`, which GitHub Pages serves at
 https://mindbloom-co.github.io/pr-stats/.
 
+> mindbloomDbt, mindbloom-data and mindbloom-data-mcp included from Q4'26 (2026-10-01); earlier quarters unchanged.
+
 ## Usage
 
 Refresh (live from GitHub, needs an authenticated `gh` that can read the repos in
@@ -23,6 +25,10 @@ Commit both, with `pr-metrics.py` or the history file if they changed, and push 
 - `--history`: frozen per-cycle aggregates (Q1-Q2) for earlier cycles.
 - `--collect-from`: collect live from this date even where history exists.
 - `--as-of`: when the data was retrieved. Marks the cutoff day as partial.
+- Repos: `REPOS` in `pr-metrics.py`. `REPO_EFFECTIVE_START` gives a first date per repo
+  (mindbloomDbt, mindbloom-data, mindbloom-data-mcp: 2026-10-01). Before that date the repo
+  is not queried: merged PRs before it, and opened PRs created before it, are not counted.
+  A cycle that crosses the date counts the repo only from the date. Q1-Q3 2026 do not change.
 - `--input` (optional, repeatable): pre-collected merged PRs instead of live
   collection. Skips `gh`. Fallback only (see "Input format"); the report is built live.
 
@@ -71,7 +77,8 @@ autonomous share = merged PRs labeled autonomous-merge
   This is the only metric that does. `gracesliu` is excluded, as in the KPIs.
 - The label is read from all configured repos (`REPOS` in the script). It exists on
   mindbloomBackend, mindbloomFrontend and mindbloomBackOffice today; the other repos
-  count in the denominator and show 0 labeled.
+  count in the denominator and show 0 labeled. mindbloomDbt, mindbloom-data and
+  mindbloom-data-mcp are in the denominator from 2026-10-01 (Q4'26).
 - The report shows the share since the tracking start, the quarter to date, the share
   per reporting cycle (2-week cycles, the first one starting at the tracking date), a
   per-repo table and a per-author table (`linuxlewis`, `dependabot`, other).

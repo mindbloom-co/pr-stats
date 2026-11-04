@@ -66,7 +66,18 @@ REPOS = [
     "mindbloomFrontend",
     "mindbloomBackOffice",
     "infrastructure",
+    "mindbloomDbt",
+    "mindbloom-data",
+    "mindbloom-data-mcp",
 ]
+# Effective-start date per repo (YYYY-MM-DD). A repo listed here is not queried and not counted
+# for any PR merged (or opened) before its date. Repos not listed count from the start.
+REPO_EFFECTIVE_START = {
+    "mindbloomDbt": "2026-10-01",       # Q4'26
+    "mindbloom-data": "2026-10-01",     # Q4'26
+    "mindbloom-data-mcp": "2026-10-01", # Q4'26
+}
+REPOS_NOTE = "mindbloomDbt, mindbloom-data and mindbloom-data-mcp included from Q4'26 (2026-10-01); earlier quarters unchanged."
 CYCLE_DAYS = 14
 
 # Goals as set at the time; the PR KPI started 2026-04-17, so Q1 has none.
@@ -290,6 +301,19 @@ def first_human_approver(approvals: list) -> str | None:
 
 def parse_ts(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def repo_window(repo: str, start: str, end: str) -> tuple[str, str] | None:
+    """Clamp a YYYY-MM-DD window to the repo's effective start; None when it ends before it."""
+    first = REPO_EFFECTIVE_START.get(repo)
+    if first is None or start >= first:
+        return start, end
+    return (first, end) if end >= first else None
+
+
+def repo_active(repo: str | None, on_date: datetime) -> bool:
+    first = REPO_EFFECTIVE_START.get(repo)
+    return first is None or fmt_date(on_date) >= first
 
 
 def hours_between(created_at: str | None, merged_at: str | None) -> float | None:
@@ -570,7 +594,7 @@ def pr_ref(pr: dict) -> str:
 def autonomous_window_stats(prs: list[dict], start: datetime, end: datetime) -> dict:
     """Autonomous share for PRs merged from start to end (UTC dates, inclusive), same as in_cycle."""
     window = [pr for pr in prs if counts_for_autonomous(pr) and in_cycle(pr["merged_at"], start, end)]
-    repos = list(REPOS) + sorted({pr.get("repo") for pr in window} - set(REPOS) - {None})
+    repos = [r for r in REPOS if repo_active(r, end)] + sorted({pr.get("repo") for pr in window} - set(REPOS) - {None})
     by_repo = {r: {"labeled": 0, "total": 0} for r in repos}
     by_author = {g: {"labeled": 0, "total": 0, "unlabeled_unapproved": 0} for g in AUTONOMOUS_AUTHOR_GROUPS}
     labeled_unapproved, unlabeled_unapproved, approvals_unknown = [], [], []
@@ -744,11 +768,18 @@ def main():
         cycle_merged = []
         cycle_opened = []
         if input_data is not None:
-            cycle_merged = [pr for pr in input_data["merged"] if in_cycle(pr["merged_at"], cycle_start, cycle_end)]
+            cycle_merged = [
+                pr for pr in input_data["merged"]
+                if in_cycle(pr["merged_at"], cycle_start, cycle_end)
+                and pr["merged_at"][:10] >= REPO_EFFECTIVE_START.get(pr.get("repo"), "")
+            ]
             cycle_opened = [pr for pr in input_data["opened"] or [] if in_cycle(pr["created_at"], cycle_start, cycle_end)]
         else:
             for repo in REPOS:
-                s, e = fmt_date(cycle_start), fmt_date(cycle_end)
+                window = repo_window(repo, fmt_date(cycle_start), fmt_date(cycle_end))
+                if window is None:
+                    continue  # repo not effective yet: do not query it for this cycle
+                s, e = window
                 cycle_merged.extend(fetch_merged_prs(repo, s, e))
                 cycle_opened.extend(fetch_opened_prs(repo, s, e))
 
@@ -1642,6 +1673,7 @@ new Chart(document.getElementById('autonomousChart'), {{
   </div>
   <p class="kpi-summary"><strong>{current_quarter_label} outlook:</strong> {current_quarter_summary}</p>
   {f'<p class="footnote">{devin_credit_note}</p>' if devin_credit_note else ''}
+  <p class="footnote">{REPOS_NOTE}</p>
 </div>
 
 <div class="chart-box kpi-box">
