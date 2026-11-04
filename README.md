@@ -58,6 +58,19 @@ These rules are fixed. The autonomous-merge metric below does not change them.
   their first human approver, divided by engineers with at least one credited PR in
   the quarter. Dependabot and other bots are excluded. `gracesliu` is excluded.
   Devin PRs with no human approval are excluded and shown as a count.
+- **Pace to goal** (quarter in progress only): the PRs/engineer goal is cumulative, so the
+  quarter-to-date actual is compared with a straight-line pace, not the full-quarter goal.
+  - Expected to date = goal x elapsed days / total days. Elapsed days run from the quarter
+    start through the as-of date, and the partial cutoff day counts as a whole day. This is
+    the same day count as the projection.
+  - % of pace = actual / expected. Gap = actual - expected, in PRs/engineer and in total PRs
+    (at the current engineer count).
+  - Required rate = (goal - actual) / weeks remaining, shown with the current weekly rate
+    (actual / weeks elapsed), both in PRs/engineer/week.
+  - Status is "On track" only when the pace is at or above 100% and the projection reaches the
+    goal. The dashboard shows a cumulative PRs/engineer by-day chart with a goal-pace line from
+    0 to the goal. Completed quarters keep the final actual vs goal.
+  - The TTM P90 goal is not cumulative and is not pace-adjusted.
 - **Time to merge**: PR created to merged, human-authored PRs only. P90 is the
   headline (Q4 2026 goal: 72 hours). P50, P75 and P95 are context.
 

@@ -526,6 +526,42 @@ def quarter_bounds(dt: datetime) -> tuple[datetime, datetime]:
     return quarter_start, quarter_end
 
 
+def short_quarter(label: str) -> str:
+    """'Q4 2026' -> "Q4'26"."""
+    quarter, year = label.split()
+    return f"{quarter}'{year[-2:]}"
+
+
+def quarter_pace(
+    goal: float,
+    total_prs: int,
+    engineers: int,
+    elapsed_days: int,
+    total_days: int,
+) -> dict:
+    """Pace-to-goal for a cumulative quarterly goal (PRs per engineer).
+
+    Same day count as the projection: elapsed_days includes the as-of day (a partial
+    day counts as a whole day). Expected to date = goal * elapsed / total. Actual,
+    expected and gap are PRs/engineer (gap_total_prs is in PRs, at the current
+    engineer count). Weekly rates are PRs/engineer/week; required is 0 once the goal
+    is met and None when no days remain.
+    """
+    actual = total_prs / engineers if engineers else 0.0
+    expected = goal * elapsed_days / total_days
+    days_remaining = max(total_days - elapsed_days, 0)
+    return {
+        "actual": actual,
+        "expected": expected,
+        "pct_of_pace": actual / expected * 100 if expected else None,
+        "gap": actual - expected,
+        "gap_total_prs": total_prs - expected * engineers,
+        "days_remaining": days_remaining,
+        "current_weekly": actual / (elapsed_days / 7) if elapsed_days else 0.0,
+        "required_weekly": max(goal - actual, 0) / (days_remaining / 7) if days_remaining else None,
+    }
+
+
 def avg_ttm(prs: list[dict]) -> float | None:
     """Average time-to-merge in hours for a list of PRs."""
     ttms = [pr["ttm_hours"] for pr in prs if pr.get("ttm_hours") is not None]
@@ -974,7 +1010,21 @@ def main():
         print_autonomous_report(autonomous)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     report_path = os.path.join(script_dir, "pr-metrics-report.html")
-    generate_html_report(cycle_stats, history_quarters, start_date, end_date, report_path, args.as_of, autonomous)
+    # Credited KPI PRs per UTC merge day for the quarter of the as-of date (cumulative pace chart).
+    # Same crediting as the quarterly KPI: human-authored PRs, plus Devin PRs credited to
+    # their first human approver when Devin data was collected.
+    quarter_start, quarter_end = quarter_bounds(end_date)
+    daily_kpi_prs: dict[str, int] = defaultdict(int)
+    for pr in all_merged:
+        day = parse_ts(pr["merged_at"]).date()
+        if not quarter_start.date() <= day <= quarter_end.date():
+            continue
+        if is_human(pr["author"]) or (ai_collected and pr.get("is_ai_pr") and pr.get("shepherd") and is_human(pr["shepherd"])):
+            daily_kpi_prs[day.isoformat()] += 1
+    generate_html_report(
+        cycle_stats, history_quarters, start_date, end_date, report_path, args.as_of, autonomous,
+        daily_kpi_prs=dict(daily_kpi_prs),
+    )
     shutil.copyfile(report_path, os.path.join(script_dir, "index.html"))
     print(f"  📄 Copied to: {os.path.join(script_dir, 'index.html')}")
 
@@ -987,6 +1037,7 @@ def generate_html_report(
     output_path: str = "pr-metrics-report.html",
     as_of: str | None = None,
     autonomous: dict | None = None,
+    daily_kpi_prs: dict[str, int] | None = None,
 ):
     """Generate an interactive HTML report with Chart.js visualizations."""
     num_cycles = len(cycle_stats)
@@ -1190,6 +1241,8 @@ def generate_html_report(
         if current_quarter_engineer_count else 0
     )
     current_quarter_days_remaining = max(current_quarter_total_days - current_quarter_elapsed_days, 0)
+    pace = None  # set below for a quarter in progress that has a goal
+    pace_headline = ""
     current_quarter_progress_pct = round(current_quarter_elapsed_days / current_quarter_total_days * 100, 1)
     current_quarter_partial = end_date < current_quarter_end
     current_quarter_heading = f"{current_quarter_label}{' to date (partial quarter)' if current_quarter_partial else ''}"
@@ -1211,7 +1264,15 @@ def generate_html_report(
             round(current_quarter_prs_needed / current_quarter_days_remaining, 1)
             if current_quarter_days_remaining else 0
         )
-        current_quarter_on_track = current_quarter_projected_prs_per_eng >= current_quarter_target
+        if current_quarter_partial:
+            pace = quarter_pace(
+                current_quarter_target, current_quarter_total_merged, current_quarter_engineer_count,
+                current_quarter_elapsed_days, current_quarter_total_days,
+            )
+        # Status: ahead of goal pace AND the existing projection reaches the goal.
+        current_quarter_on_track = current_quarter_projected_prs_per_eng >= current_quarter_target and (
+            pace is None or (pace["pct_of_pace"] or 0) >= 100
+        )
         current_quarter_status = "On track" if current_quarter_on_track else "Off track"
         current_quarter_status_class = "kpi-on-track" if current_quarter_on_track else "kpi-off-track"
         current_quarter_gap = round(current_quarter_projected_prs_per_eng - current_quarter_target, 1)
@@ -1227,12 +1288,63 @@ def generate_html_report(
                 f"or about {current_quarter_required_daily_prs:.1f}/day for the rest of the quarter."
             )
         current_quarter_target_text = f"KPI target: {current_quarter_target} PRs per engineer for {current_quarter_label}"
+        if pace is not None:
+            pace_headline = (
+                f"{short_quarter(current_quarter_label)} to date: {current_quarter_prs_per_eng:.1f} PRs/eng vs "
+                f"{pace['expected']:.1f} expected by today ({pace['pct_of_pace']:.0f}% of pace); "
+                f"full-quarter goal {current_quarter_target}, projected {current_quarter_projected_prs_per_eng:.1f}."
+            )
+            required_weekly = pace["required_weekly"]
+            current_quarter_summary += (
+                f" Pace: {pace['gap']:+.1f} PRs/eng ({pace['gap_total_prs']:+.0f} PRs across "
+                f"{current_quarter_engineer_count} engineers) against the straight-line goal pace. "
+                f"Goal needs {required_weekly:.1f} PRs/eng/week for the rest of the quarter; "
+                f"the current rate is {pace['current_weekly']:.1f}/week."
+                if required_weekly is not None else ""
+            )
 
     if current_quarter_label in quarter_labels:
         current_quarter_index = quarter_labels.index(current_quarter_label)
         quarterly_prs_per_eng_projection[current_quarter_index] = current_quarter_projected_prs_per_eng
 
     quarterly_target_line = [QUARTERLY_PRS_PER_ENGINEER_TARGETS.get(q) for q in quarter_labels]
+    quarterly_expected_to_date = [
+        round(pace["expected"], 1) if pace is not None and q == current_quarter_label else None
+        for q in quarter_labels
+    ]
+
+    # Cumulative PRs/engineer by day for the quarter in progress, with a straight goal-pace line.
+    # Point 0 is the start of the quarter; point d is the end of day d (the as-of day counts whole,
+    # as in the projection). Cumulative credited PRs are divided by the current engineer count, so
+    # the last actual point equals the headline actual.
+    pace_chart = None
+    if pace is not None and daily_kpi_prs is not None:
+        day_totals = [
+            daily_kpi_prs.get(fmt_date(current_quarter_start + timedelta(days=d)), 0)
+            for d in range(current_quarter_total_days)
+        ]
+        in_chart_total = sum(day_totals[:current_quarter_elapsed_days])
+        if in_chart_total != current_quarter_total_merged:
+            print(f"  ⚠️  Daily chart total {in_chart_total} != quarter KPI PRs {current_quarter_total_merged}; pace chart omitted")
+        else:
+            engineers = current_quarter_engineer_count
+            cumulative, running = [0.0], 0
+            for n in day_totals[:current_quarter_elapsed_days]:
+                running += n
+                cumulative.append(round(running / engineers, 2))
+            pace_chart = {
+                "labels": ["Start"] + [
+                    (current_quarter_start + timedelta(days=d)).strftime("%b %-d")
+                    for d in range(current_quarter_total_days)
+                ],
+                "actual": cumulative + [None] * (current_quarter_total_days - current_quarter_elapsed_days),
+                "pace": [round(current_quarter_target * d / current_quarter_total_days, 2) for d in range(current_quarter_total_days + 1)],
+                "projection": [None] * current_quarter_elapsed_days
+                    + [cumulative[-1]]
+                    + [None] * (current_quarter_total_days - current_quarter_elapsed_days - 1)
+                    + ([current_quarter_projected_prs_per_eng] if current_quarter_days_remaining else []),
+                "elapsed": current_quarter_elapsed_days,
+            }
 
     current_quarter_own = quarterly_own.get(current_quarter_label, 0)
     current_quarter_credited = quarterly_credited.get(current_quarter_label, 0)
@@ -1455,11 +1567,60 @@ def generate_html_report(
         goal = QUARTERLY_PRS_PER_ENGINEER_TARGETS.get(quarter)
         if quarter == current_quarter_label and current_quarter_partial:
             subtitle += f" · partial quarter through {fmt_date(end_date)}"
+            if pace is not None:
+                subtitle += f" · {ppe:.1f} PRs/engineer vs {pace['expected']:.1f} expected to date ({pace['pct_of_pace']:.0f}% of pace); goal {goal}"
         elif goal is not None:
             subtitle += f" · {ppe:.1f} PRs/engineer vs {goal} goal ({'Achieved' if ppe >= goal else 'Missed'})"
         quarterly_summary_sections.append(
             render_summary_table(quarter, summary_rows, subtitle, credited=quarterly_devin_credit[quarter])
         )
+
+    # ── Pace-to-goal fragments (quarter in progress only) ───
+    pace_cards_html = pace_headline_html = pace_chart_html = pace_chart_js = ""
+    if pace is not None:
+        def signed(value: float, digits: int = 1) -> str:
+            text = f"{value:+.{digits}f}"
+            return text.replace("-", "\u2212")  # real minus sign
+
+        required_text = f"{pace['required_weekly']:.1f}" if pace["required_weekly"] is not None else "n/a"
+        pace_headline_html = f'<p class="kpi-headline">{pace_headline}</p>'
+        pace_cards_html = f"""
+    <div class="card"><div class="value">{pace["expected"]:.1f}</div><div class="label">Expected PRs/Engineer by Today ({current_quarter_target} x {current_quarter_elapsed_days}/{current_quarter_total_days} days)</div></div>
+    <div class="card"><div class="value">{pace["pct_of_pace"]:.0f}%</div><div class="label">Of Pace (actual / expected)</div></div>
+    <div class="card"><div class="value">{signed(pace["gap"])}</div><div class="label">Gap vs Pace, PRs/Engineer</div></div>
+    <div class="card"><div class="value">{signed(pace["gap_total_prs"], 0)}</div><div class="label">Gap vs Pace, Total PRs ({current_quarter_engineer_count} engineers)</div></div>
+    <div class="card"><div class="value">{required_text}</div><div class="label">Required PRs/Eng/Week to Hit {current_quarter_target}</div></div>
+    <div class="card"><div class="value">{pace["current_weekly"]:.1f}</div><div class="label">Current PRs/Eng/Week</div></div>"""
+        if pace_chart is not None:
+            pace_chart_html = f"""<div class="chart-box kpi-box">
+  <h2>{current_quarter_heading} Cumulative PRs per Engineer vs Goal Pace</h2>
+  <p class="section-subtitle">Cumulative KPI PRs by UTC merge day divided by the current engineer count ({current_quarter_engineer_count}), against a straight line from 0 to the {current_quarter_target} goal across {current_quarter_total_days} days. The dashed orange line extends the current rate to the quarter end. {data_through}.</p>
+  <canvas id="paceChart"></canvas>
+</div>
+"""
+            pace_chart_js = f"""
+// Cumulative PRs/engineer vs goal pace (quarter in progress)
+const paceLabels = {json.dumps(pace_chart["labels"])};
+new Chart(document.getElementById('paceChart'), {{
+  type: 'line',
+  data: {{
+    labels: paceLabels,
+    datasets: [
+      {{ label: 'Actual (cumulative PRs/eng)', data: {json.dumps(pace_chart["actual"])}, borderColor: '#58a6ff', backgroundColor: '#58a6ff', borderWidth: 2, pointRadius: 0, tension: 0 }},
+      {{ label: 'Goal pace (0 to {current_quarter_target})', data: {json.dumps(pace_chart["pace"])}, borderColor: '#3fb950', backgroundColor: '#3fb950', borderWidth: 2, borderDash: [6, 6], pointRadius: 0, tension: 0 }},
+      {{ label: 'Projected at current rate', data: {json.dumps(pace_chart["projection"])}, borderColor: '#f28e2b', backgroundColor: '#f28e2b', borderWidth: 2, borderDash: [2, 4], pointRadius: 0, tension: 0, spanGaps: true }},
+    ],
+  }},
+  options: {{
+    ...chartDefaults,
+    interaction: {{ mode: 'index', intersect: false }},
+    scales: {{
+      ...chartDefaults.scales,
+      x: {{ ...chartDefaults.scales.x, ticks: {{ color: '#8b949e', maxTicksLimit: 14, autoSkip: true, maxRotation: 0 }} }},
+    }},
+  }},
+}});
+"""
 
     # ── Autonomous merges section ───────────────────────────
     autonomous_html = autonomous_js = ""
@@ -1602,6 +1763,7 @@ new Chart(document.getElementById('autonomousChart'), {{
   .section-subtitle {{ color: #8b949e; margin: -8px 0 16px; font-size: 0.9rem; }}
   .kpi-grid {{ margin-bottom: 16px; }}
   .kpi-box {{ margin-bottom: 32px; }}
+  .kpi-headline {{ color: #fff; font-size: 1.05rem; font-weight: 600; line-height: 1.5; margin-bottom: 8px; }}
   .kpi-summary {{ color: #c9d1d9; line-height: 1.5; }}
   .kpi-summary strong {{ color: #fff; }}
   .kpi-status {{ display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }}
@@ -1667,16 +1829,17 @@ new Chart(document.getElementById('autonomousChart'), {{
     <div class="card"><div class="value">{current_quarter_projected_prs_per_eng:.1f}</div><div class="label">Projected PRs/Engineer</div></div>
     <div class="card"><div class="value">{current_quarter_total_merged}</div><div class="label">KPI PRs This Quarter{f" ({current_quarter_own} human + {current_quarter_credited} Devin)" if current_quarter_excluded is not None else ""}</div></div>
     <div class="card"><div class="value">{current_quarter_engineer_count}</div><div class="label">Active Engineers</div></div>
-    <div class="card"><div class="value">{current_quarter_progress_pct:.1f}%</div><div class="label">Quarter Elapsed</div></div>
+    <div class="card"><div class="value">{current_quarter_progress_pct:.1f}%</div><div class="label">Quarter Elapsed ({current_quarter_elapsed_days}/{current_quarter_total_days} days)</div></div>{pace_cards_html}
     {f'<div class="card"><div class="value">{current_quarter_excluded}</div><div class="label">Devin PRs Excluded (no human approval; info only)</div></div>' if current_quarter_excluded is not None else ""}
-    <div class="card"><div class="value"><span class="kpi-status {current_quarter_status_class}">{current_quarter_status}</span></div><div class="label">KPI Status</div></div>
+    <div class="card"><div class="value"><span class="kpi-status {current_quarter_status_class}">{current_quarter_status}</span></div><div class="label">KPI Status{" (pace and projection)" if pace is not None else ""}</div></div>
   </div>
+  {pace_headline_html}
   <p class="kpi-summary"><strong>{current_quarter_label} outlook:</strong> {current_quarter_summary}</p>
   {f'<p class="footnote">{devin_credit_note}</p>' if devin_credit_note else ''}
   <p class="footnote">{REPOS_NOTE}</p>
 </div>
 
-<div class="chart-box kpi-box">
+{pace_chart_html}<div class="chart-box kpi-box">
   <h2>{current_quarter_heading} Time to Merge KPI</h2>
   <p class="section-subtitle">Headline: P90 time from PR created to merged for human-authored merged PRs (Devin PRs are not included){f"; goal P90 ≤ {fmt_goal_days(current_ttm_target)}" if current_ttm_target is not None else ""}. P50 is context. Percentiles use linear interpolation. {data_through}.</p>
   <div class="cards kpi-grid">
@@ -1826,7 +1989,11 @@ new Chart(document.getElementById('qtrPerEngChart'), {{
             const counts = {json.dumps(quarterly_engineer_count)};
             const totals = {json.dumps(quarterly_total_kpi)};
             const projected = {json.dumps(quarterly_prs_per_eng_projection)};
+            const expected = {json.dumps(quarterly_expected_to_date)};
             const lines = [`${{totals[i]}} KPI PRs / ${{counts[i]}} engineers`];
+            if (expected[i] !== null && expected[i] !== undefined) {{
+              lines.push(`Expected by today: ${{expected[i]}} PRs/engineer (goal pace)`);
+            }}
             if (projected[i] !== null && projected[i] !== undefined) {{
               lines.push(`Projected finish: ${{projected[i]}} PRs/engineer`);
             }}
@@ -1850,7 +2017,7 @@ new Chart(document.getElementById('qtrTotalsChart'), {{
   }},
   options: {{ ...chartDefaults, scales: {{ ...chartDefaults.scales, x: {{ ...chartDefaults.scales.x, stacked: true }}, y: {{ ...chartDefaults.scales.y, stacked: true }} }} }},
 }});
-{autonomous_js}</script>
+{pace_chart_js}{autonomous_js}</script>
 </body>
 </html>"""
 

@@ -29,6 +29,7 @@
   .section-subtitle { color: #8b949e; margin: -8px 0 16px; font-size: 0.9rem; }
   .kpi-grid { margin-bottom: 16px; }
   .kpi-box { margin-bottom: 32px; }
+  .kpi-headline { color: #fff; font-size: 1.05rem; font-weight: 600; line-height: 1.5; margin-bottom: 8px; }
   .kpi-summary { color: #c9d1d9; line-height: 1.5; }
   .kpi-summary strong { color: #fff; }
   .kpi-status { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -45,8 +46,8 @@
 <p class="subtitle">2026-01-01 → 2026-11-04 · 24 cycles · 8 contributors</p>
 
 <div class="cards">
-  <div class="card"><div class="value">2596</div><div class="label">PRs Opened</div></div>
-  <div class="card"><div class="value">2268</div><div class="label">PRs Merged (Human)</div></div>
+  <div class="card"><div class="value">2599</div><div class="label">PRs Opened</div></div>
+  <div class="card"><div class="value">2269</div><div class="label">PRs Merged (Human)</div></div>
   <div class="card"><div class="value">633</div><div class="label">AI PRs Merged</div></div>
   <div class="card"><div class="value">8</div><div class="label">Contributors</div></div>
   <div class="card"><div class="value">1.8d</div><div class="label">Avg Time to Merge</div></div>
@@ -88,32 +89,44 @@
 
 <div class="chart-box kpi-box">
   <h2>Q4 2026 to date (partial quarter) KPI Pace</h2>
-  <p class="section-subtitle">KPI target: 140 PRs per engineer for Q4 2026 (2026-10-01 → 2026-12-31). Data through 2026-11-04, retrieved 2026-11-04 ~10:10 AM CT; the cutoff day is partial. PRs/engineer = (human-authored merged PRs + merged Devin PRs credited to their first human approver) ÷ engineers with at least one credited PR this quarter; Devin PRs with no human approval are excluded. Bots and gracesliu are excluded. Projection is straight-line from days elapsed.</p>
+  <p class="section-subtitle">KPI target: 140 PRs per engineer for Q4 2026 (2026-10-01 → 2026-12-31). Data through 2026-11-04, retrieved 2026-11-04 ~1:35 PM CT; the cutoff day is partial. PRs/engineer = (human-authored merged PRs + merged Devin PRs credited to their first human approver) ÷ engineers with at least one credited PR this quarter; Devin PRs with no human approval are excluded. Bots and gracesliu are excluded. Projection is straight-line from days elapsed.</p>
   <div class="cards kpi-grid">
-    <div class="card"><div class="value">48.4</div><div class="label">Actual PRs/Engineer</div></div>
-    <div class="card"><div class="value">127.2</div><div class="label">Projected PRs/Engineer</div></div>
-    <div class="card"><div class="value">339</div><div class="label">KPI PRs This Quarter (319 human + 20 Devin)</div></div>
+    <div class="card"><div class="value">48.6</div><div class="label">Actual PRs/Engineer</div></div>
+    <div class="card"><div class="value">127.7</div><div class="label">Projected PRs/Engineer</div></div>
+    <div class="card"><div class="value">340</div><div class="label">KPI PRs This Quarter (320 human + 20 Devin)</div></div>
     <div class="card"><div class="value">7</div><div class="label">Active Engineers</div></div>
-    <div class="card"><div class="value">38.0%</div><div class="label">Quarter Elapsed</div></div>
+    <div class="card"><div class="value">38.0%</div><div class="label">Quarter Elapsed (35/92 days)</div></div>
+    <div class="card"><div class="value">53.3</div><div class="label">Expected PRs/Engineer by Today (140 x 35/92 days)</div></div>
+    <div class="card"><div class="value">91%</div><div class="label">Of Pace (actual / expected)</div></div>
+    <div class="card"><div class="value">−4.7</div><div class="label">Gap vs Pace, PRs/Engineer</div></div>
+    <div class="card"><div class="value">−33</div><div class="label">Gap vs Pace, Total PRs (7 engineers)</div></div>
+    <div class="card"><div class="value">11.2</div><div class="label">Required PRs/Eng/Week to Hit 140</div></div>
+    <div class="card"><div class="value">9.7</div><div class="label">Current PRs/Eng/Week</div></div>
     <div class="card"><div class="value">25</div><div class="label">Devin PRs Excluded (no human approval; info only)</div></div>
-    <div class="card"><div class="value"><span class="kpi-status kpi-off-track">Off track</span></div><div class="label">KPI Status</div></div>
+    <div class="card"><div class="value"><span class="kpi-status kpi-off-track">Off track</span></div><div class="label">KPI Status (pace and projection)</div></div>
   </div>
-  <p class="kpi-summary"><strong>Q4 2026 outlook:</strong> At the current pace, Q4 2026 is projected to finish at 127.2 PRs per engineer, 12.8 below the 140 PR/engineer KPI. Need 641 more credited PRs across the team, or about 11.2/day for the rest of the quarter.</p>
+  <p class="kpi-headline">Q4'26 to date: 48.6 PRs/eng vs 53.3 expected by today (91% of pace); full-quarter goal 140, projected 127.7.</p>
+  <p class="kpi-summary"><strong>Q4 2026 outlook:</strong> At the current pace, Q4 2026 is projected to finish at 127.7 PRs per engineer, 12.3 below the 140 PR/engineer KPI. Need 640 more credited PRs across the team, or about 11.2/day for the rest of the quarter. Pace: -4.7 PRs/eng (-33 PRs across 7 engineers) against the straight-line goal pace. Goal needs 11.2 PRs/eng/week for the rest of the quarter; the current rate is 9.7/week.</p>
   <p class="footnote">Devin crediting is not applied to Q1 2026, Q2 2026: the frozen history has no per-PR review data, so those quarters count human-authored PRs only.</p>
   <p class="footnote">mindbloomDbt, mindbloom-data and mindbloom-data-mcp included from Q4'26 (2026-10-01); earlier quarters unchanged.</p>
 </div>
 
 <div class="chart-box kpi-box">
+  <h2>Q4 2026 to date (partial quarter) Cumulative PRs per Engineer vs Goal Pace</h2>
+  <p class="section-subtitle">Cumulative KPI PRs by UTC merge day divided by the current engineer count (7), against a straight line from 0 to the 140 goal across 92 days. The dashed orange line extends the current rate to the quarter end. Data through 2026-11-04, retrieved 2026-11-04 ~1:35 PM CT; the cutoff day is partial.</p>
+  <canvas id="paceChart"></canvas>
+</div>
+<div class="chart-box kpi-box">
   <h2>Q4 2026 to date (partial quarter) Time to Merge KPI</h2>
-  <p class="section-subtitle">Headline: P90 time from PR created to merged for human-authored merged PRs (Devin PRs are not included); goal P90 ≤ 3 days. P50 is context. Percentiles use linear interpolation. Data through 2026-11-04, retrieved 2026-11-04 ~10:10 AM CT; the cutoff day is partial.</p>
+  <p class="section-subtitle">Headline: P90 time from PR created to merged for human-authored merged PRs (Devin PRs are not included); goal P90 ≤ 3 days. P50 is context. Percentiles use linear interpolation. Data through 2026-11-04, retrieved 2026-11-04 ~1:35 PM CT; the cutoff day is partial.</p>
   <div class="cards kpi-grid">
-    <div class="card"><div class="value">5.4d</div><div class="label">P90 Time to Merge · 130.2h</div></div>
+    <div class="card"><div class="value">5.4d</div><div class="label">P90 Time to Merge · 129.9h</div></div>
     <div class="card"><div class="value">4.3h</div><div class="label">P50 Time to Merge</div></div>
-    <div class="card"><div class="value">1.8d</div><div class="label">P75 Time to Merge · 43.9h</div></div>
-    <div class="card"><div class="value">9.6d</div><div class="label">P95 Time to Merge · 230.8h</div></div>
+    <div class="card"><div class="value">1.8d</div><div class="label">P75 Time to Merge · 43.5h</div></div>
+    <div class="card"><div class="value">9.5d</div><div class="label">P95 Time to Merge · 228.8h</div></div>
     <div class="card"><div class="value"><span class="kpi-status kpi-off-track">Off track</span></div><div class="label">P90 KPI Status</div></div>
   </div>
-  <p class="kpi-summary"><strong>Q4 2026 time to merge:</strong> P90 time to merge is 5.4d (130.2h), 2.4d above the 3-day goal. Q3 2026 baseline: P90 4.6d, P50 5.7h.</p>
+  <p class="kpi-summary"><strong>Q4 2026 time to merge:</strong> P90 time to merge is 5.4d (129.9h), 2.4d above the 3-day goal. Q3 2026 baseline: P90 4.6d, P50 5.7h.</p>
   <table>
     <thead>
       <tr>
@@ -160,11 +173,11 @@
       </tr>
       <tr>
         <td>Q4 2026 (to date)</td>
-        <td class="num">319</td>
+        <td class="num">320</td>
         <td class="num">4.3h</td>
-        <td class="num">1.8d (43.9h)</td>
-        <td class="num"><strong>5.4d (130.2h)</strong></td>
-        <td class="num">9.6d (230.8h)</td>
+        <td class="num">1.8d (43.5h)</td>
+        <td class="num"><strong>5.4d (129.9h)</strong></td>
+        <td class="num">9.5d (228.8h)</td>
         <td class="num">≤ 3 days</td>
         <td class="num"><span class="kpi-status kpi-off-track">Off track</span></td>
       </tr>
@@ -175,14 +188,14 @@
 
 <div class="chart-box kpi-box">
   <h2>Autonomous merges</h2>
-  <p class="section-subtitle">Share of merged PRs carrying the <code>autonomous-merge</code> label. Tracking started 2026-10-21. Data through 2026-11-04, retrieved 2026-11-04 ~10:10 AM CT; the cutoff day is partial. No goal is set for Q4.</p>
+  <p class="section-subtitle">Share of merged PRs carrying the <code>autonomous-merge</code> label. Tracking started 2026-10-21. Data through 2026-11-04, retrieved 2026-11-04 ~1:35 PM CT; the cutoff day is partial. No goal is set for Q4.</p>
   <div class="cards kpi-grid">
-    <div class="card"><div class="value">19.3%</div><div class="label">Share Since 2026-10-21</div></div>
-    <div class="card"><div class="value">45 / 233</div><div class="label">Labeled / Merged Since 2026-10-21</div></div>
+    <div class="card"><div class="value">19.2%</div><div class="label">Share Since 2026-10-21</div></div>
+    <div class="card"><div class="value">45 / 234</div><div class="label">Labeled / Merged Since 2026-10-21</div></div>
     <div class="card"><div class="value">11.5%</div><div class="label">Q4'26 To Date Share</div></div>
-    <div class="card"><div class="value">45 / 392</div><div class="label">Q4'26 To Date Labeled / Merged</div></div>
+    <div class="card"><div class="value">45 / 393</div><div class="label">Q4'26 To Date Labeled / Merged</div></div>
     <div class="card"><div class="value">45</div><div class="label">Labeled, No Human Approval (a)</div></div>
-    <div class="card"><div class="value">151</div><div class="label">Unlabeled, No Human Approval (b)</div></div>
+    <div class="card"><div class="value">152</div><div class="label">Unlabeled, No Human Approval (b)</div></div>
   </div>
   <div class="chart-grid">
     <div class="chart-box">
@@ -205,8 +218,8 @@
       <tr>
         <td>mindbloomBackend</td>
         <td class="num">17</td>
-        <td class="num">88</td>
-        <td class="num"><strong>19.3%</strong></td>
+        <td class="num">89</td>
+        <td class="num"><strong>19.1%</strong></td>
       </tr>
       <tr>
         <td>mindbloomFrontend</td>
@@ -247,8 +260,8 @@
       <tr>
         <td>All repos</td>
         <td class="num">45</td>
-        <td class="num">233</td>
-        <td class="num"><strong>19.3%</strong></td>
+        <td class="num">234</td>
+        <td class="num"><strong>19.2%</strong></td>
       </tr>
         </tbody>
       </table>
@@ -261,9 +274,9 @@
       <tr>
         <td>linuxlewis</td>
         <td class="num">29</td>
-        <td class="num">69</td>
-        <td class="num"><strong>42.0%</strong></td>
-        <td class="num">40</td>
+        <td class="num">70</td>
+        <td class="num"><strong>41.4%</strong></td>
+        <td class="num">41</td>
       </tr>
       <tr>
         <td>dependabot</td>
@@ -282,9 +295,9 @@
       <tr>
         <td>All authors</td>
         <td class="num">45</td>
-        <td class="num">233</td>
-        <td class="num"><strong>19.3%</strong></td>
-        <td class="num">151</td>
+        <td class="num">234</td>
+        <td class="num"><strong>19.2%</strong></td>
+        <td class="num">152</td>
       </tr>
         </tbody>
       </table>
@@ -325,16 +338,16 @@
       <tr>
         <td>linuxlewis</td>
         <td class="num">689</td>
-        <td class="num">572</td>
+        <td class="num">573</td>
         <td class="num">43</td>
-        <td class="num"><strong>615</strong></td>
-        <td class="num">711</td>
+        <td class="num"><strong>616</strong></td>
+        <td class="num">712</td>
         <td class="num">1.3d</td>
-        <td class="num">23.8</td>
+        <td class="num">23.9</td>
       </tr>
       <tr>
         <td>MaGomesP</td>
-        <td class="num">603</td>
+        <td class="num">605</td>
         <td class="num">547</td>
         <td class="num">2</td>
         <td class="num"><strong>549</strong></td>
@@ -344,7 +357,7 @@
       </tr>
       <tr>
         <td>lucascamposj</td>
-        <td class="num">335</td>
+        <td class="num">336</td>
         <td class="num">308</td>
         <td class="num">31</td>
         <td class="num"><strong>339</strong></td>
@@ -640,7 +653,7 @@
 </div>
 <div class="chart-box summary-box">
   <h2>Q4 2026</h2>
-  <p class="section-subtitle">381 opened · 319 human merged + 20 Devin credited = 339 KPI PRs · 7 engineers · 45 Devin PRs merged, 25 excluded (no human approval) · partial quarter through 2026-11-04</p>
+  <p class="section-subtitle">384 opened · 320 human merged + 20 Devin credited = 340 KPI PRs · 7 engineers · 45 Devin PRs merged, 25 excluded (no human approval) · partial quarter through 2026-11-04 · 48.6 PRs/engineer vs 53.3 expected to date (91% of pace); goal 140</p>
   <table>
     <thead>
       <tr>
@@ -658,12 +671,12 @@
       <tr>
         <td>linuxlewis</td>
         <td class="num">118</td>
-        <td class="num">94</td>
+        <td class="num">95</td>
         <td class="num">11</td>
-        <td class="num"><strong>105</strong></td>
-        <td class="num">87</td>
+        <td class="num"><strong>106</strong></td>
+        <td class="num">88</td>
         <td class="num">1.1d</td>
-        <td class="num">31.3</td>
+        <td class="num">31.7</td>
       </tr>
       <tr>
         <td>jordanmoritz</td>
@@ -677,7 +690,7 @@
       </tr>
       <tr>
         <td>MaGomesP</td>
-        <td class="num">61</td>
+        <td class="num">63</td>
         <td class="num">49</td>
         <td class="num">0</td>
         <td class="num"><strong>49</strong></td>
@@ -697,7 +710,7 @@
       </tr>
       <tr>
         <td>lucascamposj</td>
-        <td class="num">35</td>
+        <td class="num">36</td>
         <td class="num">31</td>
         <td class="num">2</td>
         <td class="num"><strong>33</strong></td>
@@ -750,8 +763,8 @@ new Chart(document.getElementById('trendChart'), {
   data: {
     labels,
     datasets: [
-      { label: 'Opened', data: [90, 100, 99, 104, 100, 89, 38, 85, 58, 51, 116, 81, 116, 50, 134, 167, 165, 193, 127, 168, 84, 119, 161, 101], borderColor: '#f28e2b', backgroundColor: 'rgba(242,142,43,0.1)', fill: true, tension: 0.3 },
-      { label: 'Merged (Human)', data: [70, 96, 90, 98, 98, 73, 32, 68, 62, 44, 102, 76, 90, 57, 114, 146, 143, 173, 95, 144, 78, 100, 131, 88], borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.1)', fill: true, tension: 0.3 },
+      { label: 'Opened', data: [90, 100, 99, 104, 100, 89, 38, 85, 58, 51, 116, 81, 116, 50, 134, 167, 165, 193, 127, 168, 84, 119, 161, 104], borderColor: '#f28e2b', backgroundColor: 'rgba(242,142,43,0.1)', fill: true, tension: 0.3 },
+      { label: 'Merged (Human)', data: [70, 96, 90, 98, 98, 73, 32, 68, 62, 44, 102, 76, 90, 57, 114, 146, 143, 173, 95, 144, 78, 100, 131, 89], borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.1)', fill: true, tension: 0.3 },
       { label: 'AI PRs', data: [18, 21, 31, 36, 33, 43, 12, 39, 31, 33, 31, 23, 46, 13, 21, 26, 46, 31, 15, 17, 22, 21, 21, 3], borderColor: '#b07aa1', backgroundColor: 'rgba(176,122,161,0.1)', fill: true, tension: 0.3, borderDash: [5, 5] },
     ],
   },
@@ -764,8 +777,8 @@ new Chart(document.getElementById('ttmTrendChart'), {
   data: {
     labels,
     datasets: [
-      { label: 'Avg (hours)', data: [33.4, 44.4, 38.1, 47.1, 39.1, 42.0, 18.4, 34.7, 44.7, 76.0, 37.4, 61.1, 54.2, 65.9, 35.7, 32.1, 25.3, 33.2, 48.4, 40.7, 40.4, 37.9, 41.7, 78.7], borderColor: '#e15759', tension: 0.3 },
-      { label: 'Median (hours)', data: [18.5, 17.8, 13.7, 18.0, 16.0, 13.3, 2.3, 8.7, 7.3, 17.9, 12.6, 24.1, 13.9, 14.6, 9.0, 4.5, 4.2, 6.2, 20.0, 3.9, 4.0, 7.0, 3.0, 4.0], borderColor: '#76b7b2', tension: 0.3 },
+      { label: 'Avg (hours)', data: [33.4, 44.4, 38.1, 47.1, 39.1, 42.0, 18.4, 34.7, 44.7, 76.0, 37.4, 61.1, 54.2, 65.9, 35.7, 32.1, 25.3, 33.2, 48.4, 40.7, 40.4, 37.9, 41.7, 77.9], borderColor: '#e15759', tension: 0.3 },
+      { label: 'Median (hours)', data: [18.5, 17.8, 13.7, 18.0, 16.0, 13.3, 2.3, 8.7, 7.3, 17.9, 12.6, 24.1, 13.9, 14.6, 9.0, 4.5, 4.2, 6.2, 20.0, 3.9, 4.0, 7.0, 3.0, 3.9], borderColor: '#76b7b2', tension: 0.3 },
     ],
   },
   options: chartDefaults,
@@ -774,14 +787,14 @@ new Chart(document.getElementById('ttmTrendChart'), {
 // Stacked bar: merged by author
 new Chart(document.getElementById('mergedChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 1, 3, 11, 18, 8, 16, 2, 6, 13, 11, 10, 11, 17, 13, 27, 35, 13, 16, 7, 15, 13, 11], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [20, 24, 35, 27, 40, 21, 6, 14, 33, 12, 20, 17, 17, 21, 31, 29, 20, 20, 19, 54, 18, 21, 27, 1], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "alettieri", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 59, 58, 40, 7, 15, 1, 0, 5, 10], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "jordanmoritz", "data": [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 34, 20], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "linuxlewis", "data": [22, 31, 14, 40, 23, 12, 4, 26, 13, 18, 49, 27, 40, 18, 36, 19, 9, 25, 20, 16, 16, 23, 41, 30], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "lucascamposj", "data": [14, 9, 9, 2, 9, 14, 5, 9, 10, 3, 15, 19, 16, 5, 14, 19, 21, 28, 19, 21, 16, 25, 2, 4], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "rafamfonseca", "data": [9, 9, 23, 8, 6, 4, 8, 3, 4, 5, 5, 2, 7, 2, 4, 7, 8, 25, 17, 22, 20, 8, 9, 12], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "samiruppaluru", "data": [5, 23, 8, 18, 9, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 1, 3, 11, 18, 8, 16, 2, 6, 13, 11, 10, 11, 17, 13, 27, 35, 13, 16, 7, 15, 13, 11], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [20, 24, 35, 27, 40, 21, 6, 14, 33, 12, 20, 17, 17, 21, 31, 29, 20, 20, 19, 54, 18, 21, 27, 1], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "alettieri", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 59, 58, 40, 7, 15, 1, 0, 5, 10], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "jordanmoritz", "data": [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 34, 20], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "linuxlewis", "data": [22, 31, 14, 40, 23, 12, 4, 26, 13, 18, 49, 27, 40, 18, 36, 19, 9, 25, 20, 16, 16, 23, 41, 31], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "lucascamposj", "data": [14, 9, 9, 2, 9, 14, 5, 9, 10, 3, 15, 19, 16, 5, 14, 19, 21, 28, 19, 21, 16, 25, 2, 4], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "rafamfonseca", "data": [9, 9, 23, 8, 6, 4, 8, 3, 4, 5, 5, 2, 7, 2, 4, 7, 8, 25, 17, 22, 20, 8, 9, 12], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "samiruppaluru", "data": [5, 23, 8, 18, 9, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}] },
   options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
 });
 
 // Stacked bar: opened by author
 new Chart(document.getElementById('openedChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 1, 7, 10, 21, 6, 23, 0, 8, 12, 15, 13, 10, 17, 19, 33, 42, 23, 20, 10, 17, 18, 12], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [27, 27, 34, 29, 43, 21, 8, 20, 32, 10, 21, 19, 21, 18, 33, 35, 23, 23, 26, 56, 16, 28, 28, 5], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "alettieri", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 63, 61, 41, 11, 18, 0, 0, 6, 12], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "jordanmoritz", "data": [0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 38, 17], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "linuxlewis", "data": [32, 30, 21, 41, 22, 20, 6, 27, 13, 22, 53, 28, 59, 15, 49, 22, 12, 27, 29, 19, 24, 27, 57, 34], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "lucascamposj", "data": [14, 12, 8, 3, 12, 16, 6, 12, 8, 5, 22, 19, 16, 5, 14, 20, 24, 28, 18, 23, 15, 29, 2, 4], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "rafamfonseca", "data": [10, 11, 24, 8, 4, 6, 11, 3, 5, 6, 8, 0, 7, 2, 5, 8, 12, 32, 20, 32, 19, 9, 12, 17], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "samiruppaluru", "data": [7, 20, 11, 16, 9, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 1, 7, 10, 21, 6, 23, 0, 8, 12, 15, 13, 10, 17, 19, 33, 42, 23, 20, 10, 17, 18, 12], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [27, 27, 34, 29, 43, 21, 8, 20, 32, 10, 21, 19, 21, 18, 33, 35, 23, 23, 26, 56, 16, 28, 28, 7], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "alettieri", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 63, 61, 41, 11, 18, 0, 0, 6, 12], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "jordanmoritz", "data": [0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 38, 17], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "linuxlewis", "data": [32, 30, 21, 41, 22, 20, 6, 27, 13, 22, 53, 28, 59, 15, 49, 22, 12, 27, 29, 19, 24, 27, 57, 34], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "lucascamposj", "data": [14, 12, 8, 3, 12, 16, 6, 12, 8, 5, 22, 19, 16, 5, 14, 20, 24, 28, 18, 23, 15, 29, 2, 5], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "rafamfonseca", "data": [10, 11, 24, 8, 4, 6, 11, 3, 5, 6, 8, 0, 7, 2, 5, 8, 12, 32, 20, 32, 19, 9, 12, 17], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "samiruppaluru", "data": [7, 20, 11, 16, 9, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}] },
   options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
 });
 
@@ -795,14 +808,14 @@ new Chart(document.getElementById('shepherdChart'), {
 // Stacked bar: reviews by author
 new Chart(document.getElementById('reviewsChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 4, 10, 17, 18, 7, 13, 1, 5, 20, 14, 14, 9, 11, 13, 11, 26, 11, 10, 5, 13, 9, 11], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [14, 11, 16, 12, 28, 22, 4, 16, 25, 10, 19, 16, 11, 8, 15, 17, 11, 9, 5, 12, 3, 9, 14, 1], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "alettieri", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 33, 31, 17, 14, 10, 0, 0, 10, 9], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "jordanmoritz", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 13, 4], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "linuxlewis", "data": [20, 27, 32, 51, 58, 43, 20, 39, 24, 32, 35, 43, 37, 17, 17, 20, 17, 13, 27, 30, 22, 24, 33, 30], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "lucascamposj", "data": [19, 22, 34, 4, 16, 11, 4, 7, 19, 8, 16, 11, 15, 5, 11, 22, 31, 34, 21, 22, 13, 23, 2, 6], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "rafamfonseca", "data": [21, 33, 21, 35, 24, 43, 8, 22, 16, 14, 31, 25, 28, 9, 11, 15, 20, 17, 20, 23, 16, 7, 8, 12], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "samiruppaluru", "data": [10, 14, 9, 21, 9, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [0, 0, 4, 10, 17, 18, 7, 13, 1, 5, 20, 14, 14, 9, 11, 13, 11, 26, 11, 10, 5, 13, 9, 11], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [14, 11, 16, 12, 28, 22, 4, 16, 25, 10, 19, 16, 11, 8, 15, 17, 11, 9, 5, 12, 3, 9, 14, 1], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "alettieri", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 33, 31, 17, 14, 10, 0, 0, 10, 9], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "jordanmoritz", "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 13, 4], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "linuxlewis", "data": [20, 27, 32, 51, 58, 43, 20, 39, 24, 32, 35, 43, 37, 17, 17, 20, 17, 13, 27, 30, 22, 24, 33, 31], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "lucascamposj", "data": [19, 22, 34, 4, 16, 11, 4, 7, 19, 8, 16, 11, 15, 5, 11, 22, 31, 34, 21, 22, 13, 23, 2, 6], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "rafamfonseca", "data": [21, 33, 21, 35, 24, 43, 8, 22, 16, 14, 31, 25, 28, 9, 11, 15, 20, 17, 20, 23, 16, 7, 8, 12], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "samiruppaluru", "data": [10, 14, 9, 21, 9, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}] },
   options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
 });
 
 // TTM by author (grouped bar)
 new Chart(document.getElementById('ttmAuthorChart'), {
   type: 'bar',
-  data: { labels, datasets: [{"label": "Jamesl28", "data": [null, null, 108.1, 127.4, 68.3, 49.3, 35.1, 24.8, 409.4, 216.5, 59.9, 76.1, 92.4, 118.0, 46.3, 39.4, 52.7, 43.8, 80.1, 37.1, 8.4, 34.2, 47.9, 38.5], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [16.1, 57.0, 36.7, 22.6, 33.2, 51.9, 5.1, 63.3, 37.4, 126.1, 66.3, 52.5, 47.5, 50.4, 36.7, 33.5, 27.6, 41.3, 38.9, 46.2, 29.8, 40.9, 35.4, 449.0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "alettieri", "data": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, 10.5, 7.6, 4.8, 58.7, 23.9, 239.4, null, 184.0, 54.2], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "jordanmoritz", "data": [null, null, null, null, null, null, 13.5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 8.7, 27.3, 13.2], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "linuxlewis", "data": [25.0, 39.4, 55.7, 48.4, 24.8, 17.9, 36.9, 11.0, 9.1, 20.0, 24.2, 49.2, 31.4, 26.5, 37.3, 53.7, 21.9, 20.2, 22.1, 19.0, 34.3, 34.7, 18.5, 30.8], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "lucascamposj", "data": [55.0, 10.4, 24.1, 32.5, 38.5, 37.5, 21.5, 70.7, 28.6, 40.7, 27.9, 77.5, 60.5, 176.2, 52.2, 50.7, 36.7, 59.9, 65.6, 48.4, 45.5, 29.7, 190.5, 398.0], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "rafamfonseca", "data": [27.7, 55.8, 31.0, 121.1, 119.1, 43.9, 1.0, 51.4, 77.7, 9.6, 21.7, 56.9, 131.1, 22.1, 0.9, 86.8, 29.6, 40.6, 42.4, 49.8, 52.0, 101.0, 99.7, 228.0], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "samiruppaluru", "data": [89.8, 47.0, 40.4, 36.4, 13.3, 43.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}] },
+  data: { labels, datasets: [{"label": "Jamesl28", "data": [null, null, 108.1, 127.4, 68.3, 49.3, 35.1, 24.8, 409.4, 216.5, 59.9, 76.1, 92.4, 118.0, 46.3, 39.4, 52.7, 43.8, 80.1, 37.1, 8.4, 34.2, 47.9, 38.5], "backgroundColor": "#4e79a7", "borderColor": "#4e79a7", "borderWidth": 2}, {"label": "MaGomesP", "data": [16.1, 57.0, 36.7, 22.6, 33.2, 51.9, 5.1, 63.3, 37.4, 126.1, 66.3, 52.5, 47.5, 50.4, 36.7, 33.5, 27.6, 41.3, 38.9, 46.2, 29.8, 40.9, 35.4, 449.0], "backgroundColor": "#f28e2b", "borderColor": "#f28e2b", "borderWidth": 2}, {"label": "alettieri", "data": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, 6.0, 10.5, 7.6, 4.8, 58.7, 23.9, 239.4, null, 184.0, 54.2], "backgroundColor": "#e15759", "borderColor": "#e15759", "borderWidth": 2}, {"label": "jordanmoritz", "data": [null, null, null, null, null, null, 13.5, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 8.7, 27.3, 13.2], "backgroundColor": "#76b7b2", "borderColor": "#76b7b2", "borderWidth": 2}, {"label": "linuxlewis", "data": [25.0, 39.4, 55.7, 48.4, 24.8, 17.9, 36.9, 11.0, 9.1, 20.0, 24.2, 49.2, 31.4, 26.5, 37.3, 53.7, 21.9, 20.2, 22.1, 19.0, 34.3, 34.7, 18.5, 29.8], "backgroundColor": "#59a14f", "borderColor": "#59a14f", "borderWidth": 2}, {"label": "lucascamposj", "data": [55.0, 10.4, 24.1, 32.5, 38.5, 37.5, 21.5, 70.7, 28.6, 40.7, 27.9, 77.5, 60.5, 176.2, 52.2, 50.7, 36.7, 59.9, 65.6, 48.4, 45.5, 29.7, 190.5, 398.0], "backgroundColor": "#edc948", "borderColor": "#edc948", "borderWidth": 2}, {"label": "rafamfonseca", "data": [27.7, 55.8, 31.0, 121.1, 119.1, 43.9, 1.0, 51.4, 77.7, 9.6, 21.7, 56.9, 131.1, 22.1, 0.9, 86.8, 29.6, 40.6, 42.4, 49.8, 52.0, 101.0, 99.7, 228.0], "backgroundColor": "#b07aa1", "borderColor": "#b07aa1", "borderWidth": 2}, {"label": "samiruppaluru", "data": [89.8, 47.0, 40.4, 36.4, 13.3, 43.0, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], "backgroundColor": "#ff9da7", "borderColor": "#ff9da7", "borderWidth": 2}] },
   options: chartDefaults,
 });
 
@@ -813,8 +826,8 @@ new Chart(document.getElementById('qtrPerEngChart'), {
   data: {
     labels: qtrLabels,
     datasets: [
-      { label: 'Actual PRs/Engineer', data: [79.6, 99.8, 166.0, 48.4], backgroundColor: '#58a6ff', borderColor: '#58a6ff', borderWidth: 2 },
-      { label: 'Projected Quarter Pace', data: [null, null, null, 127.2], backgroundColor: '#f28e2b', borderColor: '#f28e2b', borderWidth: 2 },
+      { label: 'Actual PRs/Engineer', data: [79.6, 99.8, 166.0, 48.6], backgroundColor: '#58a6ff', borderColor: '#58a6ff', borderWidth: 2 },
+      { label: 'Projected Quarter Pace', data: [null, null, null, 127.7], backgroundColor: '#f28e2b', borderColor: '#f28e2b', borderWidth: 2 },
       { label: 'KPI Target', data: [null, 90, 110, 140], type: 'line', borderColor: '#3fb950', backgroundColor: '#3fb950', borderWidth: 2, borderDash: [6, 6], pointRadius: 0, tension: 0 },
     ],
   },
@@ -827,9 +840,13 @@ new Chart(document.getElementById('qtrPerEngChart'), {
           afterLabel: function(ctx) {
             const i = ctx.dataIndex;
             const counts = [7, 5, 6, 7];
-            const totals = [557, 499, 996, 339];
-            const projected = [null, null, null, 127.2];
+            const totals = [557, 499, 996, 340];
+            const projected = [null, null, null, 127.7];
+            const expected = [null, null, null, 53.3];
             const lines = [`${totals[i]} KPI PRs / ${counts[i]} engineers`];
+            if (expected[i] !== null && expected[i] !== undefined) {
+              lines.push(`Expected by today: ${expected[i]} PRs/engineer (goal pace)`);
+            }
             if (projected[i] !== null && projected[i] !== undefined) {
               lines.push(`Projected finish: ${projected[i]} PRs/engineer`);
             }
@@ -847,11 +864,33 @@ new Chart(document.getElementById('qtrTotalsChart'), {
   data: {
     labels: qtrLabels,
     datasets: [
-      { label: 'Human PRs', data: [557, 499, 893, 319], backgroundColor: '#4e79a7' },
+      { label: 'Human PRs', data: [557, 499, 893, 320], backgroundColor: '#4e79a7' },
       { label: 'AI PRs', data: [194, 216, 178, 45], backgroundColor: '#b07aa1' },
     ],
   },
   options: { ...chartDefaults, scales: { ...chartDefaults.scales, x: { ...chartDefaults.scales.x, stacked: true }, y: { ...chartDefaults.scales.y, stacked: true } } },
+});
+
+// Cumulative PRs/engineer vs goal pace (quarter in progress)
+const paceLabels = ["Start", "Oct 1", "Oct 2", "Oct 3", "Oct 4", "Oct 5", "Oct 6", "Oct 7", "Oct 8", "Oct 9", "Oct 10", "Oct 11", "Oct 12", "Oct 13", "Oct 14", "Oct 15", "Oct 16", "Oct 17", "Oct 18", "Oct 19", "Oct 20", "Oct 21", "Oct 22", "Oct 23", "Oct 24", "Oct 25", "Oct 26", "Oct 27", "Oct 28", "Oct 29", "Oct 30", "Oct 31", "Nov 1", "Nov 2", "Nov 3", "Nov 4", "Nov 5", "Nov 6", "Nov 7", "Nov 8", "Nov 9", "Nov 10", "Nov 11", "Nov 12", "Nov 13", "Nov 14", "Nov 15", "Nov 16", "Nov 17", "Nov 18", "Nov 19", "Nov 20", "Nov 21", "Nov 22", "Nov 23", "Nov 24", "Nov 25", "Nov 26", "Nov 27", "Nov 28", "Nov 29", "Nov 30", "Dec 1", "Dec 2", "Dec 3", "Dec 4", "Dec 5", "Dec 6", "Dec 7", "Dec 8", "Dec 9", "Dec 10", "Dec 11", "Dec 12", "Dec 13", "Dec 14", "Dec 15", "Dec 16", "Dec 17", "Dec 18", "Dec 19", "Dec 20", "Dec 21", "Dec 22", "Dec 23", "Dec 24", "Dec 25", "Dec 26", "Dec 27", "Dec 28", "Dec 29", "Dec 30", "Dec 31"];
+new Chart(document.getElementById('paceChart'), {
+  type: 'line',
+  data: {
+    labels: paceLabels,
+    datasets: [
+      { label: 'Actual (cumulative PRs/eng)', data: [0.0, 1.43, 4.0, 4.0, 4.0, 5.57, 7.57, 10.0, 12.14, 14.14, 14.14, 14.14, 14.29, 14.86, 15.71, 16.29, 16.86, 16.86, 16.86, 18.29, 19.71, 22.0, 25.0, 26.86, 27.0, 27.0, 30.29, 33.0, 35.86, 37.0, 39.43, 39.86, 39.86, 42.14, 46.71, 48.57, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], borderColor: '#58a6ff', backgroundColor: '#58a6ff', borderWidth: 2, pointRadius: 0, tension: 0 },
+      { label: 'Goal pace (0 to 140)', data: [0.0, 1.52, 3.04, 4.57, 6.09, 7.61, 9.13, 10.65, 12.17, 13.7, 15.22, 16.74, 18.26, 19.78, 21.3, 22.83, 24.35, 25.87, 27.39, 28.91, 30.43, 31.96, 33.48, 35.0, 36.52, 38.04, 39.57, 41.09, 42.61, 44.13, 45.65, 47.17, 48.7, 50.22, 51.74, 53.26, 54.78, 56.3, 57.83, 59.35, 60.87, 62.39, 63.91, 65.43, 66.96, 68.48, 70.0, 71.52, 73.04, 74.57, 76.09, 77.61, 79.13, 80.65, 82.17, 83.7, 85.22, 86.74, 88.26, 89.78, 91.3, 92.83, 94.35, 95.87, 97.39, 98.91, 100.43, 101.96, 103.48, 105.0, 106.52, 108.04, 109.57, 111.09, 112.61, 114.13, 115.65, 117.17, 118.7, 120.22, 121.74, 123.26, 124.78, 126.3, 127.83, 129.35, 130.87, 132.39, 133.91, 135.43, 136.96, 138.48, 140.0], borderColor: '#3fb950', backgroundColor: '#3fb950', borderWidth: 2, borderDash: [6, 6], pointRadius: 0, tension: 0 },
+      { label: 'Projected at current rate', data: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 48.57, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 127.7], borderColor: '#f28e2b', backgroundColor: '#f28e2b', borderWidth: 2, borderDash: [2, 4], pointRadius: 0, tension: 0, spanGaps: true },
+    ],
+  },
+  options: {
+    ...chartDefaults,
+    interaction: { mode: 'index', intersect: false },
+    scales: {
+      ...chartDefaults.scales,
+      x: { ...chartDefaults.scales.x, ticks: { color: '#8b949e', maxTicksLimit: 14, autoSkip: true, maxRotation: 0 } },
+    },
+  },
 });
 
 // Autonomous share per cycle (no goal line: no goal is set for Q4)
@@ -860,7 +899,7 @@ new Chart(document.getElementById('autonomousChart'), {
   data: {
     labels: ["2026-10-21\u21922026-10-28", "2026-10-29\u21922026-11-04"],
     datasets: [
-      { label: 'Autonomous share (%)', data: [23.9, 13.1], backgroundColor: '#58a6ff', borderColor: '#58a6ff', borderWidth: 2 },
+      { label: 'Autonomous share (%)', data: [23.9, 13.0], backgroundColor: '#58a6ff', borderColor: '#58a6ff', borderWidth: 2 },
     ],
   },
   options: {
@@ -872,7 +911,7 @@ new Chart(document.getElementById('autonomousChart'), {
         callbacks: {
           afterLabel: function(ctx) {
             const labeled = [32, 13];
-            const totals = [134, 99];
+            const totals = [134, 100];
             return `${labeled[ctx.dataIndex]} labeled / ${totals[ctx.dataIndex]} merged`;
           }
         }
