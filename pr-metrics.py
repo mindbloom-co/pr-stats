@@ -31,7 +31,7 @@ Usage:
 
 --input (repeatable) takes a JSON list of merged PRs ({author,
 created/createdAt/created_at, merged/mergedAt/merged_at}, optional repo,
-n/number, reviewers, is_ai_pr, shepherd/credited_to, all_approvals), or an
+n/number, reviewers, is_ai_pr, shepherd/credited_to, all_approvals, labels), or an
 object {"merged": [...], "opened": [...]}. Devin PRs are credited from
 all_approvals ([login, state, submitted_at]) when present. Metrics the input
 does not contain (opened, reviews, AI PRs) are reported as not collected.
@@ -39,6 +39,11 @@ does not contain (opened, reviews, AI PRs) are reported as not collected.
 --history takes frozen per-cycle aggregates for earlier cycles; collection
 (live or --input) starts the day after the last frozen cycle, or at
 --collect-from. Frozen cycles do not get Devin crediting (no per-PR reviews).
+
+Autonomous merges (separate from the KPIs above): share of merged PRs labeled
+"autonomous-merge" among all merged PRs, bots, Dependabot and Devin included
+(EXCLUDED_USERS left out), since 2026-10-21. Input records may carry "labels"
+(missing = none) and all_approvals for the human-approval cross-check. See README.md.
 
 Requires: gh (GitHub CLI) authenticated with org access, unless --input is used
 """
@@ -97,6 +102,14 @@ EXCLUDED_USERS = {
 
 # AI coding agents — their PRs get attributed to the human who approved them
 AI_AGENTS = {"devin-ai-integration"}
+
+# Autonomous merges: PRs carrying this label were authored, reviewed and queued by agents.
+# Unlike the KPIs above, this metric counts bot and Devin PRs (numerator and denominator).
+AUTONOMOUS_LABEL = "autonomous-merge"
+AUTONOMOUS_TRACKING_START = "2026-10-21"  # first labeled merge: mindbloomBackend #6188
+# Reviewers that never count as a human approval in the autonomous cross-check, in
+# addition to BOTS and any "[bot]" login. The merge queue app posts as a bot.
+NON_HUMAN_REVIEWERS = {"github-merge-queue", "github-merge-queue-bot", "merge-queue"}
 
 
 # ── GitHub API ──────────────────────────────────────────────
@@ -178,14 +191,18 @@ def _paginated_search_once(search_query: str, extra_fields: str = "") -> list[di
 def fetch_merged_prs(repo: str, start: str, end: str) -> list[dict]:
     """
     Fetch all merged PRs for a repo in a date range.
-    Returns list of {author, reviewers, created_at, merged_at, time_to_merge_hours}
+    Returns list of {repo, n, author, reviewers, created_at, merged_at, ttm_hours, labels, all_approvals}
     """
     search_query = f"repo:{ORG}/{repo} is:pr is:merged merged:{start}..{end}"
     review_fields = """
+        number
+        labels(first: 20) { totalCount nodes { name } }
         reviews(first: 50) {
+            totalCount
             nodes {
                 author { login }
                 state
+                submittedAt
             }
         }
     """
@@ -199,10 +216,19 @@ def fetch_merged_prs(repo: str, start: str, end: str) -> list[dict]:
         review_states = {"APPROVED", "CHANGES_REQUESTED", "COMMENTED"}
         reviewers = set()
         approvers = []
-        for review in (node.get("reviews") or {}).get("nodes", []):
+        all_approvals = []
+        reviews = node.get("reviews") or {}
+        if reviews.get("totalCount", 0) > len(reviews.get("nodes", [])):
+            print(f"  ⚠️  {repo}#{node.get('number')}: more than 50 reviews; extra reviews ignored", file=sys.stderr)
+        labels = node.get("labels") or {}
+        if labels.get("totalCount", 0) > len(labels.get("nodes", [])):
+            print(f"  ⚠️  {repo}#{node.get('number')}: more than 20 labels; extra labels ignored", file=sys.stderr)
+        for review in reviews.get("nodes", []):
             reviewer = (review.get("author") or {}).get("login")
             if reviewer and review.get("state") in review_states:
                 reviewers.add(reviewer)
+            if reviewer and review.get("state") == "APPROVED":
+                all_approvals.append([reviewer, "APPROVED", review.get("submittedAt")])
             if reviewer and review.get("state") == "APPROVED" and is_human(reviewer):
                 approvers.append(reviewer)
 
@@ -213,6 +239,8 @@ def fetch_merged_prs(repo: str, start: str, end: str) -> list[dict]:
         created_at = node.get("createdAt")
         merged_at = node.get("mergedAt")
         prs.append({
+            "repo": repo,
+            "n": node.get("number"),
             "author": author,
             "reviewers": list(reviewers),
             "shepherd": shepherd,
@@ -220,6 +248,8 @@ def fetch_merged_prs(repo: str, start: str, end: str) -> list[dict]:
             "created_at": created_at,
             "merged_at": merged_at,
             "ttm_hours": hours_between(created_at, merged_at),
+            "labels": [label["name"] for label in labels.get("nodes", [])],
+            "all_approvals": all_approvals,
         })
 
     return prs
@@ -311,18 +341,29 @@ def load_input_prs(paths: list[str]) -> dict:
             )
         return shepherd
 
-    merged, seen = [], set()
+    def label_names(record: dict) -> list[str]:
+        """Labels as names; entries may be strings or {"name": ...}. Missing = no labels."""
+        return [l["name"] if isinstance(l, dict) else l for l in record.get("labels") or []]
+
+    merged, seen = [], {}
     for record in merged_raw:
         number = field(record, "n", "number")
         if number is not None:
             key = (record.get("repo"), number)
             if key in seen:
+                # First record wins for every KPI field. Only the autonomous-merge
+                # fields are filled in from a later duplicate (older exports lack them).
+                first = seen[key]
+                first["labels"] = sorted(set(first["labels"]) | set(label_names(record)))
+                if first["all_approvals"] is None and "all_approvals" in record:
+                    first["all_approvals"] = record["all_approvals"]
                 continue
-            seen.add(key)
         created_at = field(record, "created_at", "createdAt", "created")
         merged_at = field(record, "merged_at", "mergedAt", "merged")
         is_ai_pr = record.get("is_ai_pr", is_ai_agent(record["author"]))
-        merged.append({
+        pr = {
+            "repo": record.get("repo"),
+            "n": number,
             "author": record["author"],
             "reviewers": record.get("reviewers", []),
             "shepherd": shepherd_for(record) if is_ai_pr else None,
@@ -330,7 +371,12 @@ def load_input_prs(paths: list[str]) -> dict:
             "created_at": created_at,
             "merged_at": merged_at,
             "ttm_hours": hours_between(created_at, merged_at),
-        })
+            "labels": label_names(record),
+            "all_approvals": record.get("all_approvals"),  # None = approvals not collected
+        }
+        merged.append(pr)
+        if number is not None:
+            seen[key] = pr
     opened = None
     if opened_raw is not None:
         opened = [
@@ -476,6 +522,146 @@ def median_ttm(prs: list[dict]) -> float | None:
     if len(ttms) % 2 == 0:
         return (ttms[mid - 1] + ttms[mid]) / 2
     return ttms[mid]
+
+
+# ── Autonomous merges ───────────────────────────────────────
+# Separate from the PRs/engineer and time-to-merge KPIs: bots, Dependabot and Devin
+# PRs count here; only EXCLUDED_USERS are left out.
+
+AUTONOMOUS_AUTHOR_GROUPS = ("linuxlewis", "dependabot", "other")
+
+
+def autonomous_author_group(author: str) -> str:
+    base = base_login(author)
+    return base if base in AUTONOMOUS_AUTHOR_GROUPS[:-1] else "other"
+
+
+def counts_for_autonomous(pr: dict) -> bool:
+    return base_login(pr["author"]) not in EXCLUDED_USERS
+
+
+def is_autonomous(pr: dict) -> bool:
+    return AUTONOMOUS_LABEL in (pr.get("labels") or [])
+
+
+def is_human_reviewer(login: str) -> bool:
+    """Human for the approval cross-check: not a bot, Devin or the merge queue app.
+
+    Unlike is_human, EXCLUDED_USERS are people, so their approvals count.
+    """
+    base = base_login(login)
+    return not login.endswith("[bot]") and base not in BOTS and base not in NON_HUMAN_REVIEWERS
+
+
+def has_human_approval(pr: dict) -> bool | None:
+    """True when a human APPROVED the PR no later than its merge; None when approvals were not collected."""
+    approvals = pr.get("all_approvals")
+    if approvals is None:
+        return None
+    merged_at = parse_ts(pr["merged_at"]) if pr.get("merged_at") else None
+    return any(
+        state == "APPROVED"
+        and is_human_reviewer(login)
+        and base_login(login) != base_login(pr["author"])
+        and (merged_at is None or not submitted_at or parse_ts(submitted_at) <= merged_at)
+        for login, state, submitted_at in approvals
+    )
+
+
+def pr_ref(pr: dict) -> str:
+    return f"{pr.get('repo')}#{pr.get('n')}"
+
+
+def autonomous_window_stats(prs: list[dict], start: datetime, end: datetime) -> dict:
+    """Autonomous share for PRs merged from start to end (UTC dates, inclusive), same as in_cycle."""
+    window = [pr for pr in prs if counts_for_autonomous(pr) and in_cycle(pr["merged_at"], start, end)]
+    repos = list(REPOS) + sorted({pr.get("repo") for pr in window} - set(REPOS) - {None})
+    by_repo = {r: {"labeled": 0, "total": 0} for r in repos}
+    by_author = {g: {"labeled": 0, "total": 0, "unlabeled_unapproved": 0} for g in AUTONOMOUS_AUTHOR_GROUPS}
+    labeled_unapproved, unlabeled_unapproved, approvals_unknown = [], [], []
+    for pr in window:
+        labeled = is_autonomous(pr)
+        group = by_author[autonomous_author_group(pr["author"])]
+        repo = by_repo.setdefault(pr.get("repo"), {"labeled": 0, "total": 0})
+        for bucket in (group, repo):
+            bucket["total"] += 1
+            bucket["labeled"] += labeled
+        approved = has_human_approval(pr)
+        if approved is None:
+            approvals_unknown.append(pr)
+        elif not approved and labeled:
+            labeled_unapproved.append(pr)
+        elif not approved:
+            unlabeled_unapproved.append(pr)
+            group["unlabeled_unapproved"] += 1
+    labeled_count = sum(1 for pr in window if is_autonomous(pr))
+    return {
+        "start": fmt_date(start),
+        "end": fmt_date(end),
+        "total": len(window),
+        "labeled": labeled_count,
+        "share": labeled_count / len(window) if window else None,
+        "by_repo": by_repo,
+        "by_author": by_author,
+        "labeled_unapproved": labeled_unapproved,
+        "unlabeled_unapproved": unlabeled_unapproved,
+        "approvals_unknown": len(approvals_unknown),
+    }
+
+
+def build_autonomous_report(
+    prs: list[dict],
+    cycles: list[tuple[datetime, datetime]],
+    collect_start: datetime,
+    end_date: datetime,
+) -> dict | None:
+    """Autonomous-merge stats since tracking started, per cycle, and for the quarter to date.
+
+    Returns None when the window does not reach back to the tracking start.
+    """
+    tracking_start = datetime.strptime(AUTONOMOUS_TRACKING_START, "%Y-%m-%d")
+    if end_date < tracking_start or collect_start > tracking_start:
+        return None
+    quarter_start, _ = quarter_bounds(end_date)
+    per_cycle = [
+        {**autonomous_window_stats(prs, max(cs, tracking_start), ce), "cycle_start": fmt_date(cs), "cycle_end": fmt_date(ce)}
+        for cs, ce in cycles
+        if ce >= tracking_start
+    ]
+    return {
+        "tracking_start": AUTONOMOUS_TRACKING_START,
+        "since": autonomous_window_stats(prs, tracking_start, end_date),
+        "quarter": autonomous_window_stats(prs, quarter_start, end_date) if collect_start <= quarter_start else None,
+        "quarter_label": f"Q{(end_date.month - 1) // 3 + 1}'{end_date.strftime('%y')}",
+        "per_cycle": per_cycle,
+    }
+
+
+def fmt_share(stats: dict) -> str:
+    return f"{stats['share'] * 100:.1f}%" if stats["share"] is not None else "n/a"
+
+
+def print_autonomous_report(report: dict) -> None:
+    print()
+    print("═" * 60)
+    print(f"  AUTONOMOUS MERGES (label: {AUTONOMOUS_LABEL}; bots, Dependabot and Devin included)")
+    print("═" * 60)
+    windows = [("Since tracking start", report["since"])]
+    if report["quarter"]:
+        windows.append((f"{report['quarter_label']} to date", report["quarter"]))
+    for name, stats in windows:
+        print(f"  {name} ({stats['start']} → {stats['end']}): {stats['labeled']}/{stats['total']} = {fmt_share(stats)}")
+        for group, g in stats["by_author"].items():
+            print(f"    {group:<12} {g['labeled']:>3}/{g['total']:<4}")
+        for repo, r in stats["by_repo"].items():
+            print(f"    {str(repo):<22} {r['labeled']:>3}/{r['total']:<4}")
+        print(f"    labeled, no human approval:   {len(stats['labeled_unapproved'])}")
+        print(f"    unlabeled, no human approval: {len(stats['unlabeled_unapproved'])}")
+        if stats["approvals_unknown"]:
+            print(f"    ⚠️  approvals not collected for {stats['approvals_unknown']} PRs (left out of the cross-check)")
+    print("  Per cycle:")
+    for c in report["per_cycle"]:
+        print(f"    {c['start']} → {c['end']}: {c['labeled']}/{c['total']} = {fmt_share(c)}")
 
 
 # ── Main ────────────────────────────────────────────────────
@@ -757,9 +943,12 @@ def main():
                     "ttm_avg_hours": None,
                 })[metric] = stats[metric]
     cycle_stats = history_cycles + collected_stats
+    autonomous = build_autonomous_report(all_merged, cycles, collect_start, end_date)
+    if autonomous:
+        print_autonomous_report(autonomous)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     report_path = os.path.join(script_dir, "pr-metrics-report.html")
-    generate_html_report(cycle_stats, history_quarters, start_date, end_date, report_path, args.as_of)
+    generate_html_report(cycle_stats, history_quarters, start_date, end_date, report_path, args.as_of, autonomous)
     shutil.copyfile(report_path, os.path.join(script_dir, "index.html"))
     print(f"  📄 Copied to: {os.path.join(script_dir, 'index.html')}")
 
@@ -771,6 +960,7 @@ def generate_html_report(
     end_date: datetime,
     output_path: str = "pr-metrics-report.html",
     as_of: str | None = None,
+    autonomous: dict | None = None,
 ):
     """Generate an interactive HTML report with Chart.js visualizations."""
     num_cycles = len(cycle_stats)
@@ -1245,6 +1435,116 @@ def generate_html_report(
             render_summary_table(quarter, summary_rows, subtitle, credited=quarterly_devin_credit[quarter])
         )
 
+    # ── Autonomous merges section ───────────────────────────
+    autonomous_html = autonomous_js = ""
+    if autonomous:
+        since, quarter = autonomous["since"], autonomous["quarter"]
+
+        def share_row(name: str, stats: dict) -> str:
+            return f"""      <tr>
+        <td>{name}</td>
+        <td class="num">{stats["labeled"]}</td>
+        <td class="num">{stats["total"]}</td>
+        <td class="num"><strong>{fmt_share(stats)}</strong></td>
+      </tr>\n"""
+
+        repo_rows = "".join(share_row(repo, r | {"share": r["labeled"] / r["total"] if r["total"] else None})
+                            for repo, r in since["by_repo"].items())
+        repo_rows += share_row("All repos", since)
+        author_rows = ""
+        for group, g in since["by_author"].items():
+            author_rows += f"""      <tr>
+        <td>{group}</td>
+        <td class="num">{g["labeled"]}</td>
+        <td class="num">{g["total"]}</td>
+        <td class="num"><strong>{fmt_share(g | {"share": g["labeled"] / g["total"] if g["total"] else None})}</strong></td>
+        <td class="num">{g["unlabeled_unapproved"]}</td>
+      </tr>\n"""
+        author_rows += f"""      <tr>
+        <td>All authors</td>
+        <td class="num">{since["labeled"]}</td>
+        <td class="num">{since["total"]}</td>
+        <td class="num"><strong>{fmt_share(since)}</strong></td>
+        <td class="num">{len(since["unlabeled_unapproved"])}</td>
+      </tr>\n"""
+        quarter_cards = ""
+        if quarter:
+            quarter_cards = f"""
+    <div class="card"><div class="value">{fmt_share(quarter)}</div><div class="label">{autonomous["quarter_label"]} To Date Share</div></div>
+    <div class="card"><div class="value">{quarter["labeled"]} / {quarter["total"]}</div><div class="label">{autonomous["quarter_label"]} To Date Labeled / Merged</div></div>"""
+        labeled_unapproved_refs = (
+            ", ".join(pr_ref(pr) for pr in since["labeled_unapproved"]) if len(since["labeled_unapproved"]) <= 10 else ""
+        )
+        unknown_note = (
+            f" Approvals were not collected for {since['approvals_unknown']} PRs; they are left out of both cross-check counts."
+            if since["approvals_unknown"] else ""
+        )
+        autonomous_html = f"""<div class="chart-box kpi-box">
+  <h2>Autonomous merges</h2>
+  <p class="section-subtitle">Share of merged PRs carrying the <code>{AUTONOMOUS_LABEL}</code> label. Tracking started {autonomous["tracking_start"]}. {data_through}. No goal is set for Q4.</p>
+  <div class="cards kpi-grid">
+    <div class="card"><div class="value">{fmt_share(since)}</div><div class="label">Share Since {autonomous["tracking_start"]}</div></div>
+    <div class="card"><div class="value">{since["labeled"]} / {since["total"]}</div><div class="label">Labeled / Merged Since {autonomous["tracking_start"]}</div></div>{quarter_cards}
+    <div class="card"><div class="value">{len(since["labeled_unapproved"])}</div><div class="label">Labeled, No Human Approval (a)</div></div>
+    <div class="card"><div class="value">{len(since["unlabeled_unapproved"])}</div><div class="label">Unlabeled, No Human Approval (b)</div></div>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-box">
+      <h2>Autonomous share (per cycle)</h2>
+      <canvas id="autonomousChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <h2>By repo (since {autonomous["tracking_start"]})</h2>
+      <table>
+        <thead>
+          <tr><th>Repo</th><th class="num">Labeled</th><th class="num">Total</th><th class="num">Share</th></tr>
+        </thead>
+        <tbody>
+{repo_rows}        </tbody>
+      </table>
+      <h2 style="margin-top: 24px;">By author (since {autonomous["tracking_start"]})</h2>
+      <table>
+        <thead>
+          <tr><th>Author</th><th class="num">Labeled</th><th class="num">Total</th><th class="num">Share</th><th class="num">Unlabeled, No Human Approval</th></tr>
+        </thead>
+        <tbody>
+{author_rows}        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="footnote"><strong>Definition:</strong> autonomous share = merged PRs labeled <code>{AUTONOMOUS_LABEL}</code> ÷ all merged PRs in the configured repos ({", ".join(REPOS)}) in the same window. Unlike the PRs/engineer and time-to-merge KPIs, Dependabot, other bot and Devin PRs count in both numerator and denominator; {excluded_users} is excluded. Dates are UTC merge dates. The label is read when the report is generated. Cycles are the dashboard's 2-week cycles, starting at the tracking date.</p>
+  <p class="footnote"><strong>Cross-check:</strong> (a) = labeled PRs merged with no human APPROVED review (of {since["labeled"]} labeled); (b) = unlabeled PRs merged with no human APPROVED review, a sign of possible under-labeling (for example queued PRs). Bots, Devin and the merge queue app are not human reviewers. Only approvals submitted before the merge count.{unknown_note}{f" (a): {labeled_unapproved_refs}." if labeled_unapproved_refs else ""}{f" Q4 to date also counts merges from {quarter['start']}, before the label existed, as unlabeled." if quarter else ""}</p>
+</div>
+"""
+        autonomous_js = f"""
+// Autonomous share per cycle (no goal line: no goal is set for Q4)
+new Chart(document.getElementById('autonomousChart'), {{
+  type: 'bar',
+  data: {{
+    labels: {json.dumps([f"{c['start']}→{c['end']}" for c in autonomous["per_cycle"]])},
+    datasets: [
+      {{ label: 'Autonomous share (%)', data: {json.dumps([round(c["share"] * 100, 1) if c["share"] is not None else None for c in autonomous["per_cycle"]])}, backgroundColor: '#58a6ff', borderColor: '#58a6ff', borderWidth: 2 }},
+    ],
+  }},
+  options: {{
+    ...chartDefaults,
+    scales: {{ ...chartDefaults.scales, y: {{ ...chartDefaults.scales.y, max: 100 }} }},
+    plugins: {{
+      ...chartDefaults.plugins,
+      tooltip: {{
+        callbacks: {{
+          afterLabel: function(ctx) {{
+            const labeled = {json.dumps([c["labeled"] for c in autonomous["per_cycle"]])};
+            const totals = {json.dumps([c["total"] for c in autonomous["per_cycle"]])};
+            return `${{labeled[ctx.dataIndex]}} labeled / ${{totals[ctx.dataIndex]}} merged`;
+          }}
+        }}
+      }}
+    }}
+  }},
+}});
+"""
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1283,6 +1583,7 @@ def generate_html_report(
   .kpi-off-track {{ color: #ff7b72; background: rgba(255, 123, 114, 0.14); }}
   .footnote {{ color: #8b949e; font-size: 0.85rem; line-height: 1.5; margin: -16px 0 32px; }}
   .kpi-box .footnote {{ margin: 12px 0 0; }}
+  code {{ background: #21262d; border-radius: 4px; padding: 1px 5px; font-size: 0.85em; }}
 </style>
 </head>
 <body>
@@ -1378,6 +1679,7 @@ def generate_html_report(
   {f'<p class="footnote">{ttm_notes.strip()}</p>' if ttm_notes.strip() else ''}
 </div>
 
+{autonomous_html}
 <div class="chart-grid">
   <div class="chart-box">
     <h2>KPI PRs per Engineer (Quarterly)</h2>
@@ -1521,7 +1823,7 @@ new Chart(document.getElementById('qtrTotalsChart'), {{
   }},
   options: {{ ...chartDefaults, scales: {{ ...chartDefaults.scales, x: {{ ...chartDefaults.scales.x, stacked: true }}, y: {{ ...chartDefaults.scales.y, stacked: true }} }} }},
 }});
-</script>
+{autonomous_js}</script>
 </body>
 </html>"""
 
