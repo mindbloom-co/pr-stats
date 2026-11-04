@@ -20,16 +20,14 @@ Usage:
     python pr-metrics.py 4                      # last 4 cycles (8 weeks)
     python pr-metrics.py 2025-01-01 2025-06-01  # custom date range
 
-    # Build without gh: frozen Q1-Q2 history + pre-collected Q3-Q4 PRs
-    python pr-metrics.py 2026-01-01 2026-10-21 \\
+    # Live from GitHub, with frozen Q1-Q2 history (the normal refresh)
+    python pr-metrics.py 2026-01-01 2026-11-04 \\
         --history pr-metrics-history.json --collect-from 2026-07-01 \\
-        --input data/q3-2026-human-merged.json \\
-        --input data/q4-2026-human-merged-through-2026-10-21.json \\
-        --input data/devin-q3-2026.json \\
-        --input data/devin-q4-2026-through-2026-10-21.json \\
-        --as-of "2026-10-21 ~9:31 AM CT"
+        --as-of "2026-11-04 ~9:30 AM CT"
 
---input (repeatable) takes a JSON list of merged PRs ({author,
+    # Optional fallback without gh: add --input FILE (repeatable) with pre-collected PRs
+
+--input (optional, repeatable) takes a JSON list of merged PRs ({author,
 created/createdAt/created_at, merged/mergedAt/merged_at}, optional repo,
 n/number, reviewers, is_ai_pr, shepherd/credited_to, all_approvals, labels), or an
 object {"merged": [...], "opened": [...]}. Devin PRs are credited from
@@ -215,7 +213,6 @@ def fetch_merged_prs(repo: str, start: str, end: str) -> list[dict]:
         # Reviewers
         review_states = {"APPROVED", "CHANGES_REQUESTED", "COMMENTED"}
         reviewers = set()
-        approvers = []
         all_approvals = []
         reviews = node.get("reviews") or {}
         if reviews.get("totalCount", 0) > len(reviews.get("nodes", [])):
@@ -229,12 +226,10 @@ def fetch_merged_prs(repo: str, start: str, end: str) -> list[dict]:
                 reviewers.add(reviewer)
             if reviewer and review.get("state") == "APPROVED":
                 all_approvals.append([reviewer, "APPROVED", review.get("submittedAt")])
-            if reviewer and review.get("state") == "APPROVED" and is_human(reviewer):
-                approvers.append(reviewer)
 
         # For AI agent PRs, attribute to the first human approver
         is_ai_pr = is_ai_agent(author)
-        shepherd = approvers[0] if (is_ai_pr and approvers) else None
+        shepherd = first_human_approver(all_approvals) if is_ai_pr else None
 
         created_at = node.get("createdAt")
         merged_at = node.get("mergedAt")

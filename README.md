@@ -6,27 +6,27 @@ https://mindbloom-co.github.io/pr-stats/.
 
 ## Usage
 
-```sh
-# Live from GitHub (needs an authenticated `gh`)
-python pr-metrics.py 2026-01-01 2026-11-04 --history pr-metrics-history.json --collect-from 2026-07-01
+Refresh (live from GitHub, needs an authenticated `gh` that can read the repos in
+`REPOS`). Set END to today's date in America/Chicago and `--as-of` to the retrieval time:
 
-# Offline, from pre-collected PRs (this is how the current report is built)
-python pr-metrics.py 2026-01-01 2026-11-04 \
+```sh
+python pr-metrics.py 2026-01-01 END \
     --history pr-metrics-history.json --collect-from 2026-07-01 \
-    --input data/q3-2026-human-merged.json \
-    --input data/q4-2026-human-merged-through-2026-10-21.json \
-    --input data/devin-q3-2026.json \
-    --input data/devin-q4-2026-through-2026-10-21.json \
-    --input data/q4-2026-all-merged-through-2026-11-04.json \
-    --as-of "2026-11-04 ~9:02 AM CT"
+    --as-of "END ~H:MM AM CT"
+# example: python pr-metrics.py 2026-01-01 2026-11-04 --history pr-metrics-history.json \
+#              --collect-from 2026-07-01 --as-of "2026-11-04 ~9:30 AM CT"
 ```
 
-- `--history`: frozen per-cycle aggregates (Q1-Q2) for earlier cycles.
-- `--collect-from`: collect from this date even where history exists.
-- `--as-of`: when the data was retrieved. Marks the cutoff day as partial.
-- `--input` (repeatable): pre-collected merged PRs. Skips `gh`.
+The run takes a few minutes. It rewrites `pr-metrics-report.html` and `index.html`.
+Commit both, with `pr-metrics.py` or the history file if they changed, and push to `main`.
 
-## Input format
+- `--history`: frozen per-cycle aggregates (Q1-Q2) for earlier cycles.
+- `--collect-from`: collect live from this date even where history exists.
+- `--as-of`: when the data was retrieved. Marks the cutoff day as partial.
+- `--input` (optional, repeatable): pre-collected merged PRs instead of live
+  collection. Skips `gh`. Fallback only (see "Input format"); the report is built live.
+
+## Input format (optional fallback)
 
 A JSON list of merged PRs, or `{"merged": [...], "opened": [...]}`. Each PR has
 `author`, `created`/`createdAt`/`created_at`, `merged`/`mergedAt`/`merged_at`, and
@@ -85,6 +85,5 @@ autonomous share = merged PRs labeled autonomous-merge
 
   PRs whose approvals were not collected are left out of both counts and reported.
 - Live collection reads `labels(first: 20)` and `reviews(first: 50)` for every PR.
-  An input must list **all** merged PRs, bots included, from the start of the quarter
-  for the quarter-to-date share to be right. `data/q4-2026-all-merged-through-2026-11-04.json`
-  has this for Q4 2026; the older `data/*human*` and `data/devin*` files do not.
+  With `--input`, an input must list **all** merged PRs, bots included, from the start
+  of the quarter for the quarter-to-date share to be right.
