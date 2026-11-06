@@ -43,6 +43,9 @@ Autonomous merges (separate from the KPIs above): share of merged PRs labeled
 (EXCLUDED_USERS left out), since 2026-10-21. Input records may carry "labels"
 (missing = none) and all_approvals for the human-approval cross-check. See README.md.
 
+Time to merge from ready for review (separate section, live collection only): mergedAt minus the
+last ReadyForReviewEvent at or before the merge, human PRs only, America/Chicago days. See README.md.
+
 Requires: gh (GitHub CLI) authenticated with org access, unless --input is used
 """
 
@@ -55,7 +58,9 @@ import subprocess
 import sys
 import time
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
+from html import escape as html_escape
+from zoneinfo import ZoneInfo
 
 # ── Configuration ───────────────────────────────────────────
 
@@ -719,6 +724,461 @@ def print_autonomous_report(report: dict) -> None:
         print(f"    {c['start']} → {c['end']}: {c['labeled']}/{c['total']} = {fmt_share(c)}")
 
 
+# ── Time to merge from ready for review ─────────────────────
+# Separate from the created→merged KPI above (which is unchanged). The clock starts when the
+# PR last became ready for review, so time spent as a draft is not counted. Human-authored PRs
+# only (is_human: no bots, Dependabot, Devin or EXCLUDED_USERS) and the same repo start dates.
+# Day boundaries are America/Chicago, unlike the UTC dates used elsewhere in the report.
+# Collected live in its own pass (merged PRs from 28 days before the chart start, PRs closed
+# since the chart start, and PRs open now), each with its draft timeline events inline.
+# Merged PRs have final events, but nothing is cached in the history file: that file holds
+# frozen aggregates only, and the inline events add no extra requests.
+
+REPORT_TZ = ZoneInfo("America/Chicago")
+TTM_READY_CHART_START = "2026-07-01"
+TTM_READY_WINDOW_DAYS = 28
+TTM_READY_MIN_N = 8          # below this many PRs, P90 is not shown
+STALE_OPEN_DAYS = 7
+SEARCH_SLICE_DAYS = 14
+DRAFT_EVENT_KINDS = {"ReadyForReviewEvent": "ready", "ConvertToDraftEvent": "draft"}
+DRAFT_TIMELINE_FIELDS = """
+    timelineItems(first: 100, itemTypes: [READY_FOR_REVIEW_EVENT, CONVERT_TO_DRAFT_EVENT]) {
+        pageInfo { hasNextPage endCursor }
+        nodes { __typename ... on ReadyForReviewEvent { createdAt } ... on ConvertToDraftEvent { createdAt } }
+    }
+"""
+TTM_READY_PR_FIELDS = "number state isDraft closedAt" + DRAFT_TIMELINE_FIELDS
+
+
+def _draft_events(timeline: dict | None) -> list[list[str]]:
+    return [[DRAFT_EVENT_KINDS[n["__typename"]], n["createdAt"]] for n in (timeline or {}).get("nodes", [])]
+
+
+def _remaining_draft_events(repo: str, number: int, cursor: str) -> list[list[str]]:
+    """Events after the first page of a PR's draft timeline (rare: more than 100 events)."""
+    events = []
+    while cursor:
+        data = gh_graphql(
+            f'{{ repository(owner: "{ORG}", name: "{repo}") {{ pullRequest(number: {number}) {{ '
+            f'timelineItems(first: 100, after: "{cursor}", itemTypes: [READY_FOR_REVIEW_EVENT, CONVERT_TO_DRAFT_EVENT]) {{ '
+            f'pageInfo {{ hasNextPage endCursor }} nodes {{ __typename ... on ReadyForReviewEvent {{ createdAt }} '
+            f'... on ConvertToDraftEvent {{ createdAt }} }} }} }} }} }}'
+        )
+        timeline = data["data"]["repository"]["pullRequest"]["timelineItems"]
+        events += _draft_events(timeline)
+        cursor = timeline["pageInfo"]["endCursor"] if timeline["pageInfo"]["hasNextPage"] else None
+    return events
+
+
+def _date_slices(first: str, last: str, days: int = SEARCH_SLICE_DAYS) -> list[tuple[str, str]]:
+    """Split YYYY-MM-DD..YYYY-MM-DD into windows small enough to stay under the 1000-result search cap."""
+    cursor, end = datetime.strptime(first, "%Y-%m-%d"), datetime.strptime(last, "%Y-%m-%d")
+    slices = []
+    while cursor <= end:
+        slice_end = min(cursor + timedelta(days=days - 1), end)
+        slices.append((fmt_date(cursor), fmt_date(slice_end)))
+        cursor = slice_end + timedelta(days=1)
+    return slices
+
+
+def collect_ttm_ready_prs(chart_start: str, last_day: str) -> dict:
+    """Live pass for the ready-for-review time to merge.
+
+    Returns {"prs": [...], "retrieved_at": ISO UTC}. Human-authored PRs only: merged from 27
+    days before chart_start (the first rolling window), closed unmerged and updated since
+    chart_start, and open now. Each PR carries its draft events as [kind, ISO time] pairs, oldest first.
+    """
+    lookback = fmt_date(datetime.strptime(chart_start, "%Y-%m-%d") - timedelta(days=TTM_READY_WINDOW_DAYS))
+    by_key: dict[tuple[str, int], dict] = {}
+
+    def add(repo: str, nodes: list[dict]) -> None:
+        for node in nodes:
+            author = (node.get("author") or {}).get("login", "unknown")
+            if not is_human(author) or (repo, node["number"]) in by_key:
+                continue
+            timeline = node.get("timelineItems") or {}
+            events = _draft_events(timeline)
+            if timeline.get("pageInfo", {}).get("hasNextPage"):
+                events += _remaining_draft_events(repo, node["number"], timeline["pageInfo"]["endCursor"])
+            by_key[(repo, node["number"])] = {
+                "repo": repo,
+                "n": node["number"],
+                "author": author,
+                "state": node["state"],
+                "is_draft": node["isDraft"],
+                "created_at": node["createdAt"],
+                "merged_at": node.get("mergedAt"),
+                "closed_at": node.get("closedAt"),
+                "events": sorted(events, key=lambda e: e[1]),
+            }
+
+    for repo in REPOS:
+        first = REPO_EFFECTIVE_START.get(repo, "")
+        for s, e in _date_slices(max(lookback, first), last_day):
+            add(repo, _paginated_search(f"repo:{ORG}/{repo} is:pr is:merged merged:{s}..{e}", TTM_READY_PR_FIELDS))
+        # Closed without merging. The `closed:` qualifier skips some PRs (for example
+        # mindbloomBackOffice#1209), so slice by `updated:`: a PR closed on or after the chart
+        # start was updated then too. It may also return older closed PRs; those are harmless.
+        for s, e in _date_slices(max(chart_start, first), last_day):
+            add(repo, _paginated_search(f"repo:{ORG}/{repo} is:pr is:closed -is:merged updated:{s}..{e}", TTM_READY_PR_FIELDS))
+        open_query = f"repo:{ORG}/{repo} is:pr is:open" + (f" created:>={first}" if first else "")
+        add(repo, _paginated_search(open_query, TTM_READY_PR_FIELDS))
+        print(f"  TTM-ready collection: {repo} done ({len(by_key)} PRs so far)", file=sys.stderr)
+    return {"prs": list(by_key.values()), "retrieved_at": datetime.now(timezone.utc).isoformat()}
+
+
+def _ct_midnight(day: date) -> datetime:
+    return datetime(day.year, day.month, day.day, tzinfo=REPORT_TZ)
+
+
+def _draft_at(pr: dict, when: datetime) -> tuple[bool, datetime | None]:
+    """(is draft, last time it became ready) at `when`, from the draft events.
+
+    Initial state: a first ReadyForReviewEvent means it opened as a draft, a first
+    ConvertToDraftEvent means it opened ready. With no events it never changed, so the
+    current isDraft applies.
+    """
+    events = [(parse_ts(t), kind) for kind, t in pr["events"]]
+    draft = events[0][1] == "ready" if events else bool(pr["is_draft"])
+    ready_at = None
+    for t, kind in events:
+        if t > when:
+            break
+        draft = kind == "draft"
+        if kind == "ready":
+            ready_at = t
+    return draft, ready_at
+
+
+def build_ttm_ready_report(
+    collected: dict,
+    end_date: datetime,
+    engineers: set[str],
+    goal_hours: float | None,
+    quarter_label: str,
+) -> dict:
+    """Rolling 28-day time to merge from ready for review, plus the open-stale guard.
+
+    TTM-ready = mergedAt minus the last ReadyForReviewEvent at or before the merge
+    (createdAt when there is none). Windows are 28 America/Chicago days ending on the
+    window date, so the as-of day is partial. Stale = open and not draft, with more than
+    STALE_OPEN_DAYS since it was last ready for review (or created).
+    """
+    end_day = end_date.date()
+    now = min(parse_ts(collected["retrieved_at"]), _ct_midnight(end_day + timedelta(days=1)))
+    chart_start = datetime.strptime(TTM_READY_CHART_START, "%Y-%m-%d").date()
+
+    merged = []
+    for pr in collected["prs"]:
+        if not (pr["merged_at"] and is_human(pr["author"])):
+            continue
+        if pr["merged_at"][:10] < REPO_EFFECTIVE_START.get(pr["repo"], ""):
+            continue  # same rule as the rest of the report: new repos count by merge date
+        merged_at, created_at = parse_ts(pr["merged_at"]), parse_ts(pr["created_at"])
+        if merged_at > now:
+            continue
+        _, ready_at = _draft_at(pr, merged_at)
+        ready_at = ready_at or created_at
+        merged.append({
+            "author": pr["author"],
+            "ref": pr_ref({"repo": pr["repo"], "n": pr["n"]}),
+            "repo": pr["repo"],
+            "n": pr["n"],
+            "merged": merged_at,
+            "ready_h": (merged_at - ready_at).total_seconds() / 3600,
+            "created_h": (merged_at - created_at).total_seconds() / 3600,
+        })
+
+    def window(first_day: date, last_day: date) -> list[dict]:
+        start, stop = _ct_midnight(first_day), _ct_midnight(last_day + timedelta(days=1))
+        return [p for p in merged if start <= p["merged"] < stop]
+
+    def rolling(day: date) -> list[dict]:
+        return window(day - timedelta(days=TTM_READY_WINDOW_DAYS - 1), day)
+
+    def stats(prs: list[dict], key: str = "ready_h") -> dict:
+        values = [p[key] for p in prs]
+        return {"p50": percentile(values, 50), "p90": percentile(values, 90), "n": len(values)}
+
+    # Daily rolling series, TTM-ready with the old createdAt basis for comparison.
+    series = []
+    day = chart_start
+    while day <= end_day:
+        prs = rolling(day)
+        series.append({"date": day.isoformat(), "ready": stats(prs), "created": stats(prs, "created_h")})
+        day += timedelta(days=1)
+
+    current = stats(rolling(end_day))
+    week_ago = stats(rolling(end_day - timedelta(days=7)))
+    four_weeks_ago = stats(rolling(end_day - timedelta(days=28)))
+    quarter_start, _ = quarter_bounds(end_date)
+    quarter_prs = window(quarter_start.date(), end_day)
+    quarter = stats(quarter_prs)
+
+    # Open, non-draft, stale PRs. Same repo rule as opened PRs: created on or after the repo start.
+    in_scope = [
+        pr for pr in collected["prs"]
+        if is_human(pr["author"]) and pr["created_at"][:10] >= REPO_EFFECTIVE_START.get(pr["repo"], "")
+    ]
+
+    def stale_open_at(when: datetime) -> list[dict]:
+        stale = []
+        for pr in in_scope:
+            created_at = parse_ts(pr["created_at"])
+            ended = pr["merged_at"] or pr["closed_at"]
+            if created_at > when or (ended and parse_ts(ended) <= when):
+                continue
+            draft, ready_at = _draft_at(pr, when)
+            if draft:
+                continue
+            age = when - (ready_at or created_at)
+            if age > timedelta(days=STALE_OPEN_DAYS):
+                stale.append({"author": pr["author"], "ref": pr_ref({"repo": pr["repo"], "n": pr["n"]}), "age_days": age.total_seconds() / 86400})
+        return stale
+
+    snapshot_days = []
+    day = end_day - timedelta(days=7)
+    while day >= chart_start:
+        snapshot_days.append(day)
+        day -= timedelta(days=7)
+    snapshots = [{"label": d.strftime("%b %-d"), "count": len(stale_open_at(_ct_midnight(d)))} for d in reversed(snapshot_days)]
+    stale_now = stale_open_at(now)
+    snapshots.append({"label": "Now", "count": len(stale_now)})
+
+    # Per developer. Rows: engineers in scope for the quarter KPI plus anyone with data here.
+    rolling_prs, stale_by_author = rolling(end_day), defaultdict(list)
+    for pr in stale_now:
+        stale_by_author[pr["author"]].append(pr)
+    developers = {p["author"] for p in rolling_prs} | {p["author"] for p in quarter_prs} | set(stale_by_author)
+    developers |= {a for a in engineers if is_human(a)}
+    rows = []
+    for dev in developers:
+        mine = [p for p in rolling_prs if p["author"] == dev]
+        slowest = max(mine, key=lambda p: p["ready_h"], default=None)
+        rows.append({
+            "author": dev,
+            "rolling": stats(mine),
+            "quarter": stats([p for p in quarter_prs if p["author"] == dev]),
+            "over_3d": sum(p["ready_h"] > 72 for p in mine),
+            "over_7d": sum(p["ready_h"] > 168 for p in mine),
+            "slowest": {"ref": slowest["ref"], "repo": slowest["repo"], "n": slowest["n"], "days": slowest["ready_h"] / 24} if slowest else None,
+            "stale_open": sorted(stale_by_author.get(dev, []), key=lambda p: -p["age_days"]),
+        })
+
+    def sort_key(row: dict):
+        p90 = row["rolling"]["p90"] if row["rolling"]["n"] >= TTM_READY_MIN_N else None
+        slowest = row["slowest"]["days"] if row["slowest"] else -1
+        # Worst P90 first; developers with too few PRs for a P90 follow, slowest PR first.
+        return (p90 is None, -(p90 or 0), -slowest, row["author"].lower())
+
+    rows.sort(key=sort_key)
+    return {
+        "end_date": fmt_date(end_date),
+        "as_of_ct": now.astimezone(REPORT_TZ).strftime("%Y-%m-%d %H:%M"),
+        "window_start": (end_day - timedelta(days=TTM_READY_WINDOW_DAYS - 1)).isoformat(),
+        "current": current,
+        "week_ago": week_ago,
+        "four_weeks_ago": four_weeks_ago,
+        "quarter": quarter,
+        "quarter_label": quarter_label,
+        "goal_hours": goal_hours,
+        "series": series,
+        "snapshots": snapshots,
+        "stale_now": len(stale_now),
+        "rows": rows,
+        "total_prs": len(merged),
+    }
+
+
+def print_ttm_ready_report(report: dict) -> None:
+    def days(hours: float | None) -> str:
+        return f"{hours / 24:.2f}d" if hours is not None else "n/a"
+
+    cur, quarter = report["current"], report["quarter"]
+    print()
+    print("═" * 60)
+    print("  TIME TO MERGE FROM READY FOR REVIEW (human PRs, America/Chicago days)")
+    print("═" * 60)
+    print(f"  Rolling 28d to {report['end_date']}: P90 {days(cur['p90'])}  P50 {days(cur['p50'])}  n={cur['n']}")
+    print(f"  1 week ago: P90 {days(report['week_ago']['p90'])}  4 weeks ago: P90 {days(report['four_weeks_ago']['p90'])}")
+    print(f"  {report['quarter_label']} to date: P90 {days(quarter['p90'])}  P50 {days(quarter['p50'])}  n={quarter['n']}")
+    print(f"  Open non-draft PRs older than {STALE_OPEN_DAYS}d now: {report['stale_now']}")
+
+
+def render_ttm_ready_section(report: dict, data_through: str) -> tuple[str, str]:
+    """HTML and Chart.js code for the ready-for-review section (needs chartDefaults from the page)."""
+
+    def days(hours: float | None) -> str:
+        return f"{hours / 24:.2f}d" if hours is not None else "—"
+
+    def delta(now_h: float | None, then: dict, label: str) -> str:
+        if now_h is None or then["p90"] is None:
+            return f"{label}: n/a"
+        diff = (now_h - then["p90"]) / 24
+        cls = "delta-good" if diff < 0 else "delta-bad" if diff > 0 else ""
+        sign = f"{diff:+.2f}d".replace("-", "−")
+        return f'{label}: <span class="{cls}">{sign}</span> <span class="muted">(was {days(then["p90"])}, n={then["n"]})</span>'
+
+    cur, quarter = report["current"], report["quarter"]
+    short_q = short_quarter(report["quarter_label"])
+    goal_h = report["goal_hours"]
+    goal_label = f"current goal (≤{goal_h / 24:g}d)" if goal_h else None
+
+    def row_html(row: dict) -> str:
+        def p90_cell(s: dict) -> str:
+            if s["p90"] is not None and s["n"] >= TTM_READY_MIN_N:
+                return f'<strong>{days(s["p90"])}</strong>'
+            return '—<span class="lown"> low n</span>' if s["n"] else "—"
+
+        slowest = row["slowest"]
+        slowest_cell = (
+            f'<a href="https://github.com/{ORG}/{slowest["repo"]}/pull/{slowest["n"]}">{slowest["ref"]}</a> · {slowest["days"]:.1f}d'
+            if slowest else "—"
+        )
+        stale = row["stale_open"]
+        tip = html_escape("; ".join(f"{s['ref']} ({s['age_days']:.0f}d)" for s in stale))
+        stale_cell = f'<span title="{tip}">{len(stale)}</span>' if stale else "0"
+        r, q = row["rolling"], row["quarter"]
+        return f"""      <tr>
+        <td>{html_escape(row["author"])}</td>
+        <td class="num">{days(r["p50"])}</td>
+        <td class="num">{p90_cell(r)}</td>
+        <td class="num">{r["n"]}</td>
+        <td class="num">{days(q["p50"])}</td>
+        <td class="num">{p90_cell(q)}</td>
+        <td class="num">{q["n"]}</td>
+        <td class="num">{row["over_3d"]}</td>
+        <td class="num">{row["over_7d"]}</td>
+        <td>{slowest_cell}</td>
+        <td class="num">{stale_cell}</td>
+      </tr>\n"""
+
+    rows_html = "".join(row_html(r) for r in report["rows"])
+    html = f"""<div class="chart-box kpi-box">
+  <h2>Time to merge from ready for review (rolling 28 days)</h2>
+  <p class="section-subtitle">Human-authored PRs merged in the last 28 America/Chicago days ({report["window_start"]} → {report["end_date"]}; the last day is partial, as of {report["as_of_ct"]} CT). Devin PRs are not included. {data_through}. Separate from the created-to-merge KPI above, which is unchanged.</p>
+  <div class="cards kpi-grid">
+    <div class="card card-wide">
+      <div class="value">{days(cur["p90"])}</div>
+      <div class="label">Rolling 28-Day P90 from Ready for Review{f" · {cur['p90']:.1f}h" if cur["p90"] is not None else ""}</div>
+      <div class="card-meta">P50 {days(cur["p50"])} · n = {cur["n"]}</div>
+      <div class="card-meta">{delta(cur["p90"], report["week_ago"], "vs 1 week ago")}</div>
+      <div class="card-meta">{delta(cur["p90"], report["four_weeks_ago"], "vs 4 weeks ago")}</div>
+      <div class="card-meta">{short_q} to date: P90 <strong>{days(quarter["p90"])}</strong> · P50 {days(quarter["p50"])} · n = {quarter["n"]}</div>
+    </div>
+    <div class="card"><div class="value">{report["stale_now"]}</div><div class="label">Open, Non-Draft PRs Older Than {STALE_OPEN_DAYS} Days Now</div></div>
+  </div>
+  <div class="chart-grid" style="grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);">
+    <div class="chart-box">
+      <h2>Rolling 28-day P90 (days)</h2>
+      <canvas id="ttmReadyChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <h2>Open non-draft PRs older than {STALE_OPEN_DAYS} days (weekly)</h2>
+      <canvas id="ttmStaleChart"></canvas>
+    </div>
+  </div>
+  <h2 style="margin-top: 8px;">By developer</h2>
+  <p class="section-subtitle">Sorted by rolling 28-day P90, worst first. P90 shows — below n = {TTM_READY_MIN_N}; those rows follow, slowest PR first. Slowest PR and the over-3d and over-7d counts are for merges in the rolling 28 days. Open &gt; {STALE_OPEN_DAYS}d counts open, non-draft PRs right now (hover for the list).</p>
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2">Developer</th>
+        <th class="num" colspan="3">Rolling 28 days</th>
+        <th class="num" colspan="3">{short_q} to date</th>
+        <th class="num" rowspan="2">Merged &gt; 3d</th>
+        <th class="num" rowspan="2">Merged &gt; 7d</th>
+        <th rowspan="2">Slowest PR (28d)</th>
+        <th class="num" rowspan="2">Open &gt; {STALE_OPEN_DAYS}d</th>
+      </tr>
+      <tr>
+        <th class="num">P50</th><th class="num">P90</th><th class="num">n</th>
+        <th class="num">P50</th><th class="num">P90</th><th class="num">n</th>
+      </tr>
+    </thead>
+    <tbody>
+{rows_html}    </tbody>
+  </table>
+  <p class="footnote"><strong>Definition:</strong> ready for review = the last time the PR left draft (<code>ReadyForReviewEvent</code>) at or before its merge, or its creation time if it was never a draft; time to merge runs from then to merge, so time spent as a draft is not counted. The lighter line is the same window measured from creation.</p>
+</div>
+"""
+    series = report["series"]
+    labels = [datetime.strptime(s["date"], "%Y-%m-%d").strftime("%b %-d") for s in series]
+    marks = [
+        {"index": i, "label": f"Q{(int(s['date'][5:7]) - 1) // 3 + 1}'{s['date'][2:4]} start"}
+        for i, s in enumerate(series)
+        if s["date"][8:] == "01" and s["date"][5:7] in ("01", "04", "07", "10")
+    ]
+
+    def d(value: float | None) -> float | None:
+        return round(value / 24, 2) if value is not None else None
+
+    js = f"""
+// Time to merge from ready for review: rolling 28-day P90, createdAt comparison, goal, quarter starts
+const ttmReadyLabels = {json.dumps(labels)};
+const ttmReadyN = {json.dumps([s["ready"]["n"] for s in series])};
+const ttmReadyGoal = {json.dumps(goal_h / 24 if goal_h else None)};
+const ttmReadyGoalLabel = {json.dumps(goal_label)};
+const ttmReadyMarks = {json.dumps(marks)};
+const ttmReadyPlugin = {{
+  id: 'ttmReadyAnnotations',
+  afterDatasetsDraw(chart) {{
+    const {{ ctx, chartArea, scales }} = chart;
+    ctx.save();
+    ctx.font = '11px sans-serif';
+    for (const m of ttmReadyMarks) {{
+      const x = scales.x.getPixelForValue(m.index);
+      ctx.strokeStyle = '#6e7681'; ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x, chartArea.top); ctx.lineTo(x, chartArea.bottom); ctx.stroke();
+      ctx.setLineDash([]); ctx.fillStyle = '#8b949e'; ctx.textAlign = 'left';
+      ctx.fillText(m.label, x + 4, chartArea.top + 12);
+    }}
+    if (ttmReadyGoal !== null) {{
+      const y = scales.y.getPixelForValue(ttmReadyGoal);
+      ctx.fillStyle = '#3fb950'; ctx.textAlign = 'left';
+      ctx.fillText(ttmReadyGoalLabel, chartArea.left + 6, y + 15);
+    }}
+    ctx.restore();
+  }},
+}};
+new Chart(document.getElementById('ttmReadyChart'), {{
+  type: 'line',
+  data: {{
+    labels: ttmReadyLabels,
+    datasets: [
+      {{ label: 'P90 from ready for review', data: {json.dumps([d(s["ready"]["p90"]) for s in series])}, borderColor: '#58a6ff', backgroundColor: '#58a6ff', borderWidth: 2.5, pointRadius: 0, tension: 0, order: 1 }},
+      {{ label: 'P90 from created (old basis)', data: {json.dumps([d(s["created"]["p90"]) for s in series])}, borderColor: 'rgba(160,196,240,0.6)', backgroundColor: 'rgba(160,196,240,0.6)', borderWidth: 1.5, pointRadius: 0, tension: 0, order: 2 }},
+      {{ label: ttmReadyGoalLabel, data: ttmReadyLabels.map(() => ttmReadyGoal), borderColor: '#3fb950', backgroundColor: '#3fb950', borderWidth: 1.5, borderDash: [6, 6], pointRadius: 0, order: 3 }},
+    ],
+  }},
+  options: {{
+    ...chartDefaults,
+    interaction: {{ mode: 'index', intersect: false }},
+    scales: {{
+      ...chartDefaults.scales,
+      x: {{ ...chartDefaults.scales.x, ticks: {{ color: '#8b949e', maxTicksLimit: 14, autoSkip: true, maxRotation: 0 }} }},
+      y: {{ ...chartDefaults.scales.y, title: {{ display: true, text: 'days', color: '#8b949e' }} }},
+    }},
+    plugins: {{
+      ...chartDefaults.plugins,
+      legend: {{ labels: {{ color: '#8b949e', font: {{ size: 11 }}, filter: (item) => item.text !== ttmReadyGoalLabel }} }},
+      tooltip: {{ callbacks: {{ afterBody: (items) => `n = ${{ttmReadyN[items[0].dataIndex]}} merged PRs in the 28-day window` }} }},
+    }},
+  }},
+  plugins: [ttmReadyPlugin],
+}});
+new Chart(document.getElementById('ttmStaleChart'), {{
+  type: 'bar',
+  data: {{
+    labels: {json.dumps([s["label"] for s in report["snapshots"]])},
+    datasets: [{{ label: 'Open, non-draft, older than {STALE_OPEN_DAYS} days', data: {json.dumps([s["count"] for s in report["snapshots"]])}, backgroundColor: '#f28e2b', borderColor: '#f28e2b', borderWidth: 1 }}],
+  }},
+  options: {{ ...chartDefaults, scales: {{ ...chartDefaults.scales, y: {{ ...chartDefaults.scales.y, ticks: {{ color: '#8b949e', precision: 0 }} }} }} }},
+}});
+"""
+    return html, js
+
+
 # ── Main ────────────────────────────────────────────────────
 
 def main():
@@ -1021,9 +1481,17 @@ def main():
             continue
         if is_human(pr["author"]) or (ai_collected and pr.get("is_ai_pr") and pr.get("shepherd") and is_human(pr["shepherd"])):
             daily_kpi_prs[day.isoformat()] += 1
+    ttm_ready_collected = None
+    if input_data is None and end_date >= datetime.strptime(TTM_READY_CHART_START, "%Y-%m-%d"):
+        print("  Collecting draft timelines for time to merge from ready for review...", file=sys.stderr)
+        last_day = fmt_date(max(end_date, today.replace(tzinfo=None)) + timedelta(days=1))
+        ttm_ready_collected = collect_ttm_ready_prs(TTM_READY_CHART_START, last_day)
+    elif input_data is not None:
+        print("  Time to merge from ready for review needs live collection; section skipped with --input.")
     generate_html_report(
         cycle_stats, history_quarters, start_date, end_date, report_path, args.as_of, autonomous,
         daily_kpi_prs=dict(daily_kpi_prs),
+        ttm_ready_collected=ttm_ready_collected,
     )
     shutil.copyfile(report_path, os.path.join(script_dir, "index.html"))
     print(f"  📄 Copied to: {os.path.join(script_dir, 'index.html')}")
@@ -1038,6 +1506,7 @@ def generate_html_report(
     as_of: str | None = None,
     autonomous: dict | None = None,
     daily_kpi_prs: dict[str, int] | None = None,
+    ttm_ready_collected: dict | None = None,
 ):
     """Generate an interactive HTML report with Chart.js visualizations."""
     num_cycles = len(cycle_stats)
@@ -1732,6 +2201,16 @@ new Chart(document.getElementById('autonomousChart'), {{
 }});
 """
 
+    # ── Time to merge from ready for review ─────────────────
+    ttm_ready_html = ttm_ready_js = ""
+    if ttm_ready_collected is not None:
+        ttm_ready = build_ttm_ready_report(
+            ttm_ready_collected, end_date, set(quarterly_data.get(current_quarter_label, {})),
+            TTM_P90_TARGET_HOURS.get(current_quarter_label), current_quarter_label,
+        )
+        ttm_ready_html, ttm_ready_js = render_ttm_ready_section(ttm_ready, data_through)
+        print_ttm_ready_report(ttm_ready)
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1771,6 +2250,15 @@ new Chart(document.getElementById('autonomousChart'), {{
   .kpi-off-track {{ color: #ff7b72; background: rgba(255, 123, 114, 0.14); }}
   .footnote {{ color: #8b949e; font-size: 0.85rem; line-height: 1.5; margin: -16px 0 32px; }}
   .kpi-box .footnote {{ margin: 12px 0 0; }}
+  .card-wide {{ grid-column: span 2; text-align: left; }}
+  .card-wide .value, .card-wide .label {{ text-align: left; }}
+  .card-meta {{ color: #c9d1d9; font-size: 0.85rem; margin-top: 6px; }}
+  .muted {{ color: #8b949e; }}
+  .delta-good {{ color: #3fb950; font-weight: 600; }}
+  .delta-bad {{ color: #ff7b72; font-weight: 600; }}
+  .lown {{ color: #8b949e; font-size: 0.7rem; }}
+  a {{ color: #58a6ff; text-decoration: none; }}
+  a:hover {{ text-decoration: underline; }}
   code {{ background: #21262d; border-radius: 4px; padding: 1px 5px; font-size: 0.85em; }}
 </style>
 </head>
@@ -1869,6 +2357,7 @@ new Chart(document.getElementById('autonomousChart'), {{
   {f'<p class="footnote">{ttm_notes.strip()}</p>' if ttm_notes.strip() else ''}
 </div>
 
+{ttm_ready_html}
 {autonomous_html}
 <div class="chart-grid">
   <div class="chart-box">
@@ -2017,7 +2506,7 @@ new Chart(document.getElementById('qtrTotalsChart'), {{
   }},
   options: {{ ...chartDefaults, scales: {{ ...chartDefaults.scales, x: {{ ...chartDefaults.scales.x, stacked: true }}, y: {{ ...chartDefaults.scales.y, stacked: true }} }} }},
 }});
-{pace_chart_js}{autonomous_js}</script>
+{pace_chart_js}{autonomous_js}{ttm_ready_js}</script>
 </body>
 </html>"""
 

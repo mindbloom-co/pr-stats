@@ -74,6 +74,32 @@ These rules are fixed. The autonomous-merge metric below does not change them.
 - **Time to merge**: PR created to merged, human-authored PRs only. P90 is the
   headline (Q4 2026 goal: 72 hours). P50, P75 and P95 are context.
 
+## Time to merge from ready for review
+
+Separate section under the Time to Merge KPI. It does not change that KPI, its goal, PRs/engineer or
+the autonomous-merge numbers.
+
+```
+TTM-ready = mergedAt - last ReadyForReviewEvent at or before the merge
+            (createdAt when the PR was never a draft)
+```
+
+- Draft time is not counted: the clock starts when a reviewer can act.
+- Human-authored PRs only (no bots, Dependabot, Devin or `gracesliu`), same repo start dates as the
+  rest of the report (data repos count PRs merged from 2026-10-01).
+- Day boundaries are America/Chicago here (the rest of the report uses UTC dates). Percentiles use
+  the same linear interpolation. Rolling windows are 28 Chicago days ending on the as-of date, so the
+  last day is partial.
+- Shows: the rolling 28-day P90/P50/n with the change vs 1 and 4 weeks ago and the quarter to date;
+  a daily rolling P90 chart since 2026-07-01 (with the created-based line and the 3-day goal);
+  weekly counts of open, non-draft PRs older than 7 days; and a per-developer table (P90 shows
+  "—" below n = 8). Stale PR age counts from when the PR was last ready for review. Past weekly
+  counts are rebuilt from created, closed, merged and draft events (Chicago midnight snapshots).
+- Collected live in a separate pass (about 3 minutes): merged PRs from 28 days before the chart start,
+  PRs closed unmerged since then, and PRs open now, with their draft events in the same GraphQL
+  search. Nothing is cached in the history file (it only keeps frozen aggregates). Skipped with `--input`.
+- Closed-unmerged PRs are found by `updated:` slices, because the `closed:` search qualifier skips some PRs.
+
 ## Autonomous merges
 
 Share of merged PRs that carry the `autonomous-merge` label (authored, reviewed and
